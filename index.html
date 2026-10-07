@@ -695,23 +695,27 @@ button.sync{font:inherit;border:0;cursor:pointer}
     const s=sheet(`<h2>同步與資料</h2>
       <p style="margin:0 0 12px;color:var(--ink-dim);font-size:14px">${user?'已登入：'+esc(user.email):(sb?'還沒登入':'還沒設定雲端同步，資料只存在這台裝置。')}</p>
       <h3>匯入舊資料</h3>
-      <p style="margin:0 0 8px;color:var(--ink-dim);font-size:13px">選測試版匯出的 .json 檔，重複的紀錄不會多算。</p>
+      <p style="margin:0 0 8px;color:var(--ink-dim);font-size:13px">把複製的資料貼在下面，按「匯入」。重複的紀錄不會多算。</p>
+      <textarea id="impText" rows="4" placeholder="在這裡長按 → 貼上" style="width:100%;font:inherit;font-size:16px;padding:10px;border-radius:8px;border:1px solid var(--edge);background:var(--plate-lo);color:var(--ink)"></textarea>
+      <button class="key" id="impGo" style="margin-top:8px"><span class="face">匯入</span></button>
+      <p style="margin:12px 0 6px;color:var(--ink-dim);font-size:13px">或選一個 .json 檔：</p>
       <input type="file" id="impFile" accept="application/json,.json">
       <div id="impMsg" style="margin-top:8px;font-size:13px;color:var(--warn)" role="status"></div>
       ${user?'<h3>帳號</h3><button class="btn-metal" id="signOut" style="width:100%;padding:10px">登出</button>':''}`);
-    s.querySelector('#impFile').onchange=async e=>{
-      const f=e.target.files[0]; if(!f) return;
+    const importText=async text=>{
       const m=s.querySelector('#impMsg');
       try{
-        const arr=JSON.parse(await f.text());
+        const arr=JSON.parse(text.trim());
         const rows=(Array.isArray(arr)?arr:[]).filter(x=>x&&x.id&&x.kind);
         const have=new Set(events.map(e=>e.id));
         const fresh=rows.filter(r=>!have.has(r.id));
         fresh.forEach(({id,...data})=>{ events.push({id,...data}); const box=read(OB); box.push({op:'put',id,data}); write(OB,box); });
         local.save(); render(); await flush();
         m.textContent=`匯入 ${fresh.length} 筆（${rows.length-fresh.length} 筆已經有了）`;
-      }catch(err){ m.textContent='這個檔案讀不懂，確定是匯出的 .json 嗎？'; }
+      }catch(err){ m.textContent='讀不懂這段資料，確定整段都有複製到嗎？'; }
     };
+    s.querySelector('#impGo').onclick=()=>importText(s.querySelector('#impText').value);
+    s.querySelector('#impFile').onchange=async e=>{ const f=e.target.files[0]; if(f) importText(await f.text()); };
     const so=s.querySelector('#signOut'); if(so) so.onclick=async()=>{ await sb.auth.signOut(); events=[]; local.save(); write(OB,[]); render(); s.remove(); };
   };
 
