@@ -203,7 +203,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
 .outlook .olh button{background:none;border:1px solid rgba(142,245,154,.45);border-radius:4px;color:var(--phosphor);font:12px var(--f-mono);padding:2px 8px;cursor:pointer}
 /* timeline: thin grey line joining the lights */
 .tl .it{position:relative}
-.tl .it:not(:last-child)::after{content:"";position:absolute;left:66px;top:21px;bottom:-9px;width:1px;background:#4a453c}
+.tl .it:not(:last-child)::after{content:"";position:absolute;left:67px;transform:translateX(-50%);top:21px;bottom:-9px;width:1px;background:#4a453c}
 .tl .dot{position:relative;z-index:1}
 .presets{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
 .addrow{display:flex;justify-content:flex-end;margin-top:12px}
@@ -228,7 +228,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
 .tl{display:flex;flex-direction:column}
 .tl .it{display:grid;grid-template-columns:52px 14px 1fr;gap:8px;align-items:start;padding:7px 0}
 .tl time{font-family:var(--f-mono);color:var(--ink-dim);font-size:13px;text-align:right}
-.tl .dot{width:10px;height:10px;border-radius:50%;margin-top:4px;background:var(--orange);box-shadow:0 0 6px rgba(255,122,26,.6)}
+.tl .dot{width:10px;height:10px;border-radius:50%;margin-top:4px;justify-self:center;background:var(--orange);box-shadow:0 0 6px rgba(255,122,26,.6)}
 .tl .dot.g{background:var(--phosphor);box-shadow:0 0 6px rgba(142,245,154,.6)}
 .tl .dot.d{background:#6f685b;box-shadow:none}
 .tl .tx{font-size:14px;min-width:0;overflow-wrap:anywhere}
@@ -820,7 +820,7 @@ button.sync{font:inherit;border:0;cursor:pointer}
     const completes = c+1===g.target;
     const pts = 10 + (completes?30:0);
     const id = await add('check', {goal:g.id, pts, ...(rest?{rest}:{})});
-    if(completes) achieve(`${g.name} ${g.target}/${g.target}`, `+${pts} PTS`);
+    if(completes) achieve(`${g.name} ${g.target}/${g.target}`, `+${pts} FEEDS`);
     else toast(`${g.name}${rest?'（'+rest+'）':''} 打卡 +${pts}`, ()=>api.del(id));
   }
   document.addEventListener('click', e=>{
@@ -917,7 +917,7 @@ button.sync{font:inherit;border:0;cursor:pointer}
         <span class="thumb"><b>${pad(d.getMonth()+1)}/${pad(d.getDate())}</b><span>週${DOW[d.getDay()]}</span></span>
         <span><span class="sl-top"><span>SAVE ${String(idx).padStart(3,'0')}</span>${isNow?'<em>NOW</em>':''}</span>
           <span class="sl-title">${title}</span>
-          <span class="sl-stats">${blank?'<span>NO DATA</span>':`<span>打卡 <b>${S.checks}</b></span><span>NT$<b>${fmt(S.spend)}</b></span>${S.mood?`<span class="g">${esc(S.mood)}</span>`:''}<span>+<b>${S.pts}</b> PTS</span>`}</span></span>
+          <span class="sl-stats">${blank?'<span>NO DATA</span>':`<span>打卡 <b>${S.checks}</b></span><span>NT$<b>${fmt(S.spend)}</b></span>${S.mood?`<span class="g">${esc(S.mood)}</span>`:''}<span>+<b>${S.pts}</b> FEEDS</span>`}</span></span>
       </button>`);
     }
     $('slots').innerHTML = out.join('');
@@ -947,7 +947,7 @@ button.sync{font:inherit;border:0;cursor:pointer}
       const pts = Math.max(ex.pts||0, 5*filled + (filled===4?10:0));
       const ts = ex.ts || (isToday ? Date.now() : new Date(d.getFullYear(),d.getMonth(),d.getDate(),21).getTime());
       try{ await api.put(id,{kind:'journal', ts, day:k, week:weekKey(d), memory, g:gs, pts}); }catch(e){ toast('沒有存到，請再試一次'); return; }
-      if(filled===4 && !(ex.pts>=30)) achieve(isToday?'今天的手帳寫滿了':`${pad(d.getMonth()+1)}/${pad(d.getDate())} 補記完成`, `+${pts} PTS`);
+      if(filled===4 && !(ex.pts>=30)) achieve(isToday?'今天的手帳寫滿了':`${pad(d.getMonth()+1)}/${pad(d.getDate())} 補記完成`, `+${pts} FEEDS`);
       else toast(`存檔完成${pts>(ex.pts||0)?` +${pts-(ex.pts||0)}`:''}`);
     };
   }
