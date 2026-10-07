@@ -207,6 +207,8 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
 .tl .dot{position:relative;z-index:1}
 .presets{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
 .addrow{display:flex;justify-content:flex-end;margin-top:12px}
+.addkey{width:auto}
+.addkey .face{width:52px;height:46px;padding:0;font:600 26px/1 var(--f-ui)}
 
 /* quick */
 .quick{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
@@ -381,7 +383,7 @@ button.sync{font:inherit;border:0;cursor:pointer}
       <button class="btn-metal" id="dNext" aria-label="後一天">›</button>
     </div>
     <div class="tl" id="tl"></div>
-    <div class="addrow"><button class="obtn" id="openNote" aria-label="快速記一筆事情"><i>+</i></button></div>
+    <div class="addrow"><button class="key addkey" id="openNote" aria-label="快速記一筆事情"><span class="face">＋</span></button></div>
   </section>
 
   <!-- WORLD -->
