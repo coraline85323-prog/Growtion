@@ -41,7 +41,8 @@
   --f-tc:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
   --f-mono:"Share Tech Mono",ui-monospace,"SFMono-Regular",monospace;
 }
-html,body{height:100%}
+html{min-height:calc(100% + env(safe-area-inset-top,0px))} /* iOS home-screen app: without the extra top inset the bottom bar floats up on short pages */
+body{min-height:100%}
 body{background:var(--void);color:var(--ink);font-family:var(--f-tc);-webkit-tap-highlight-color:transparent}
 *{box-sizing:border-box}
 button{font:inherit;color:inherit;cursor:pointer;border:0;background:none;padding:0}
