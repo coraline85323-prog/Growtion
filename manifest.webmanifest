@@ -1,0 +1,13 @@
+{
+  "name": "Growtion",
+  "short_name": "Growtion",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0f0e0c",
+  "theme_color": "#0f0e0c",
+  "icons": [
+    { "src": "growtion-icon-180.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "growtion-icon-1024.png", "sizes": "1024x1024", "type": "image/png", "purpose": "any" }
+  ]
+}
