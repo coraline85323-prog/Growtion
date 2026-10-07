@@ -14,6 +14,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');</script>
 <script src="config.js"></script>
+<script src="flowers.js"></script>
 <script>if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600&family=Noto+Sans+TC:wght@400;500;700&family=Share+Tech+Mono&display=swap">
@@ -279,6 +280,67 @@ nav button.on i{background:var(--orange);box-shadow:0 0 6px var(--orange)}
   display:flex;gap:14px;align-items:center;padding:10px 14px;border-radius:8px;background:#0b0a09;border:1px solid var(--edge);font-size:13px}
 .toast button{color:var(--orange);font-family:var(--f-ui);letter-spacing:.08em;white-space:nowrap}
 .world{text-align:center;padding:30px 10px}
+/* another world: news TV, seed meter, collection */
+#vWorld{display:flex;flex-direction:column;gap:14px}
+#vWorld[hidden]{display:none}
+.wlabel{margin:0 0 8px 4px}
+.tv{position:relative;border-radius:10px;overflow:hidden;background:#000;box-shadow:inset 0 0 0 2px #3c372f,inset 0 0 0 6px #14120f}
+.tv canvas{display:block;width:100%;aspect-ratio:1;height:auto}
+.tv::after{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(0,0,0,.22) 0 1px,transparent 1px 3px),radial-gradient(120% 90% at 50% 45%,transparent 60%,rgba(0,0,0,.55))}
+.tv .bug{position:absolute;top:10px;left:10px;z-index:2;display:flex;gap:6px;align-items:center}
+.tv .live{background:var(--dial-red);color:#fff;font:700 11px/1 var(--f-ui);letter-spacing:.14em;padding:4px 7px;border-radius:2px;display:flex;align-items:center;gap:5px}
+.tv .live i{width:6px;height:6px;border-radius:50%;background:#fff;animation:blinkdot 1.2s steps(2) infinite}
+@keyframes blinkdot{50%{opacity:0}}
+.tv .ch{background:rgba(0,0,0,.6);font:11px/1 var(--f-mono);padding:4px 7px;border-radius:2px;letter-spacing:.08em;color:var(--ink)}
+.tv .lower{position:absolute;left:0;right:0;bottom:30px;z-index:2;padding:0 10px}
+.tv .kick{display:inline-block;background:var(--orange);color:#1a0e04;font-weight:700;font-size:12px;letter-spacing:.14em;padding:3px 10px}
+.tv .main{background:linear-gradient(90deg,rgba(14,13,11,.94),rgba(14,13,11,.82));border-left:4px solid var(--orange);padding:8px 12px 9px;text-align:left}
+.tv .main b{display:block;font-size:18px;font-weight:700;letter-spacing:.05em;color:#fff}
+.tv .main small{display:block;font:13px var(--f-mono);color:var(--orange-hot);margin-top:3px;letter-spacing:.06em}
+.tv .ticker{position:absolute;left:0;right:0;bottom:0;height:26px;z-index:2;background:#0b0a09;border-top:1px solid #2a2721;display:flex;align-items:center;overflow:hidden}
+.tv .ticker .tag{position:relative;z-index:1;flex:none;height:100%;display:grid;place-items:center;padding:0 8px;background:var(--dial-red);color:#fff;font:700 10px/1 var(--f-ui);letter-spacing:.14em}
+.tv .ticker .run{white-space:nowrap;font-size:12px;color:var(--ink);padding-left:10px;animation:tickrun 24s linear infinite}
+.tv .ticker .run em{font-style:normal;color:var(--orange-hot);margin:0 14px}
+@keyframes tickrun{to{transform:translateX(-100%)}}
+.tv .empty{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:radial-gradient(ellipse at center,#0e2412,var(--crt) 80%);color:var(--phosphor);text-shadow:0 0 6px rgba(142,245,154,.5);font-family:var(--f-mono);text-align:center;padding:20px}
+.tv .empty b{font:400 22px var(--f-tc);letter-spacing:.12em}
+.tv .empty span{font-size:12px;letter-spacing:.2em;opacity:.7}
+.need{padding:4px;color:var(--phosphor);text-shadow:0 0 6px rgba(142,245,154,.45);font-size:14px;letter-spacing:.1em}
+.need .big{display:flex;align-items:baseline;gap:8px;margin-top:4px}
+.need .big b{font:400 50px/1 var(--f-mono);font-variant-numeric:tabular-nums}
+.cells{display:grid;grid-template-columns:repeat(10,1fr);gap:4px;margin:14px 4px 6px}
+.cells i{height:16px;border:1px solid var(--phosphor-dim);border-radius:2px}
+.cells i.on{background:var(--phosphor);box-shadow:0 0 6px rgba(142,245,154,.6)}
+.cscale{display:flex;justify-content:space-between;font:11px var(--f-mono);color:var(--phosphor);opacity:.7;margin:0 4px}
+.stages{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin:14px 4px 2px;font-size:12px;text-align:center;color:var(--phosphor)}
+.stages span{padding:4px 0;border-radius:3px;opacity:.4}
+.stages span.done{opacity:.8}
+.stages span.now{opacity:1;background:var(--phosphor);color:var(--crt);font-weight:700}
+.wmeta{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:10px;padding:0 4px;font:11px var(--f-ui);letter-spacing:.1em;color:var(--ink-dim)}
+.wmeta b{font-family:var(--f-mono);font-weight:400;color:var(--ink)}
+.shelf{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.fslot{display:block;width:100%;text-align:left;background:#0b0a09;border-radius:8px;padding:5px;box-shadow:inset 0 0 0 1px #3c372f}
+.fslot canvas,.fslot .q{display:block;width:100%;aspect-ratio:1;height:auto;border-radius:4px}
+.fslot .q{display:grid;place-items:center;background:var(--crt);color:var(--phosphor-dim);font:28px var(--f-mono)}
+.fslot p{margin:5px 2px 1px;font-size:11px;line-height:1.3;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fslot p small{display:block;font:10px var(--f-mono);color:var(--ink-dim)}
+.fslot.lock p{color:var(--ink-dim)}
+.fslot.new{box-shadow:inset 0 0 0 1px var(--orange),0 0 10px rgba(255,122,26,.35)}
+.fdetail canvas{display:block;width:100%;aspect-ratio:1;height:auto;border-radius:8px}
+.fdetail dl{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;margin:12px 0 0;font-size:14px}
+.fdetail dt{color:var(--ink-dim)}.fdetail dd{margin:0}
+/* growing animation */
+.grow{position:fixed;inset:0;z-index:40;display:grid;place-items:center;padding:16px;background:rgba(5,5,4,.92)}
+.grow .gbox{width:100%;max-width:400px;display:flex;flex-direction:column;gap:12px}
+.grow .ghead{font:12px var(--f-ui);letter-spacing:.2em;color:var(--orange-hot);text-align:center}
+.grow .tv .lower{transform:translateX(-110%);transition:transform .5s cubic-bezier(.2,.9,.3,1)}
+.grow .tv.on .lower{transform:none}
+.grow .tv .bug{opacity:0;transition:opacity .3s}
+.grow .tv.on .bug{opacity:1}
+.grow .scan{position:absolute;left:0;right:0;height:18%;z-index:1;pointer-events:none;background:linear-gradient(transparent,rgba(142,245,154,.18),transparent);top:-20%}
+.grow .stages span{transition:all .2s}
+.grow .gbtn[hidden]{display:none}
+.grow .skip{font:11px var(--f-ui);letter-spacing:.16em;color:var(--ink-dim);text-align:center}
 /* save slots */
 .slots{display:flex;flex-direction:column;gap:10px}
 .slot-card{display:grid;grid-template-columns:76px minmax(0,1fr);gap:12px;align-items:stretch;width:100%;text-align:left;padding:10px;border-radius:9px;
@@ -394,13 +456,11 @@ button.sync{font:inherit;border:0;cursor:pointer}
     <div class="slots" id="slots"></div>
   </section>
 
-  <section id="vWorld" hidden>
-    <div class="crt"><div class="screen world">
-      <i class="brk tl"></i><i class="brk tr"></i><i class="brk bl"></i><i class="brk br"></i>
-      <div class="big">另一個世界</div>
-      <div class="sub">COMING SOON</div>
-      <p class="lines" style="margin:16px 0 0" id="worldPts"></p>
-    </div></div>
+  <section id="vWorld" hidden aria-label="另一個世界">
+    <div class="hdr" style="padding:0 6px"><span class="label">ANOTHER WORLD · 另一個世界</span><b id="wSeeds">0</b></div>
+    <div><p class="label wlabel">培育快報</p><div class="plate" id="wNews"></div></div>
+    <div><p class="label wlabel">下一朵花</p><div class="plate" id="wNext"></div></div>
+    <div><p class="label wlabel" id="wDexLbl">圖鑑</p><div class="shelf" id="wDex"></div></div>
   </section>
 </div>
 
@@ -655,10 +715,91 @@ button.sync{font:inherit;border:0;cursor:pointer}
     renderNest(D);
     renderTimeline();
     if(!$('vJournal').hidden) renderSlots();
-    $('worldPts').innerHTML = `每 500 顆種子培育出一種花<br>目前有 ${fmt(D.points)} 顆種子，再 ${500 - D.points%500} 顆就能培育下一朵`;
+    renderWorld(D);
   }
 
   /* today's outlook: three things for today on the CRT; tap one to tick it off */
+  /* ---------- another world: every 500 seeds grows one flower (seeds keep adding up, never spent) ---------- */
+  const PER_FLOWER = 500, SEEN = 'growtion-seen-flowers';
+  const ymd = t => { const d=new Date(t); return `${d.getFullYear()}/${pad(d.getMonth()+1)}/${pad(d.getDate())}`; };
+  function flowerList(){
+    const list = []; let sum = 0;
+    [...events].filter(e=>+e.pts).sort((a,b)=>(a.ts||0)-(b.ts||0)).forEach(e=>{
+      sum += +e.pts;
+      while(sum >= (list.length+1)*PER_FLOWER) list.push({n:list.length+1, ts:e.ts});
+    });
+    return list.map(f=>({...f, r:Flower.recipe(f.n)}));
+  }
+  const STAGES = ['種子','發芽','長苗','結苞','開花'];
+  const stageOf = into => Math.min(3, Math.floor(into/(PER_FLOWER/4)));  // 開花 only lights when the flower is grown
+  function newsTV(f, total){
+    return `<div class="tv"><div class="bug"><span class="live"><i></i>LIVE</span><span class="ch">CH.03 花圃台</span></div>
+      <canvas width="480" height="480" data-n="${f.n}"></canvas>
+      <div class="lower"><span class="kick">最新培育種</span><div class="main"><b>No.${String(Flower.number(f.r)).padStart(5,'0')} ${esc(Flower.name(f.r))}</b><small>於 ${ymd(f.ts)} 培育成功</small></div></div>
+      ${total!=null?`<div class="ticker"><span class="tag">快訊</span><div class="run">${total}</div></div>`:''}</div>`;
+  }
+  function paintIn(root){ root.querySelectorAll('canvas[data-n]').forEach(c=>Flower.paint(c, Flower.recipe(+c.dataset.n))); }
+  let worldList = [];
+  function renderWorld(D){
+    if(!window.Flower) return;
+    Flower.ready.then(()=>{
+      const L = worldList = flowerList(), into = D.points % PER_FLOWER, need = PER_FLOWER - into, st = stageOf(into), last = L[L.length-1];
+      $('wSeeds').textContent = `種子 ${fmt(D.points)}`;
+      const tick = [`累積 ${fmt(D.points)} 顆種子`, `圖鑑已收錄 ${L.length} 朵花`, `下一朵還差 ${need} 顆種子`, '每 500 顆種子培育出一種花'].join('<em>／</em>');
+      $('wNews').innerHTML = last ? newsTV(last, tick)
+        : `<div class="tv"><div class="empty"><b>等待第一朵花</b><span>NO SIGNAL</span><span style="letter-spacing:.08em">累積 500 顆種子就會開播</span></div></div>`;
+      $('wNext').innerHTML = `<div class="crt"><div class="need">離下次培育成功還差<div class="big"><b>${need}</b><span>顆種子</span></div></div>
+        <div class="cells" role="img" aria-label="這一輪 ${into} / ${PER_FLOWER} 顆種子">${Array.from({length:10},(_,i)=>`<i class="${into>=(i+1)*50?'on':''}"></i>`).join('')}</div>
+        <div class="cscale"><span>0</span><span>250</span><span>500</span></div>
+        <div class="stages">${STAGES.map((x,i)=>`<span class="${i<st?'done':i===st?'now':''}">${x}</span>`).join('')}</div></div>
+        <div class="wmeta"><span>這一輪 <b>${into} / ${PER_FLOWER}</b></span><span>每 500 顆種子培育出一種花</span></div>`;
+      $('wDexLbl').textContent = `圖鑑 ${L.length} 朵`;
+      const slots = [...L].reverse().map((f,i)=>`<button class="fslot ${i===0?'new':''}" data-flower="${f.n}" aria-label="${esc(Flower.name(f.r))}"><canvas width="160" height="160" data-n="${f.n}"></canvas><p>${esc(PARTS_PET(f.r))}<small>#${f.n}・${ymd(f.ts).slice(5)}</small></p></button>`);
+      slots.push(`<div class="fslot lock"><div class="q">?</div><p>培育中<small>還差 ${need} 顆</small></p></div>`);
+      $('wDex').innerHTML = slots.join('');
+      paintIn($('vWorld'));
+      checkNewFlower(L);
+    });
+  }
+  const PARTS_PET = r => Flower.PARTS[3].opts[r.pet];
+  function openFlower(n){
+    const f = worldList.find(x=>x.n===n); if(!f) return;
+    const s = sheet(`<div class="fdetail"><h2>${esc(Flower.name(f.r))}</h2><canvas width="480" height="480" data-n="${n}"></canvas>
+      <dl><dt>編號</dt><dd>No.${String(Flower.number(f.r)).padStart(5,'0')} / ${fmt(Flower.TOTAL)}</dd><dt>第幾朵</dt><dd>第 ${n} 朵</dd><dt>培育成功</dt><dd>${ymd(f.ts)}</dd>
+      ${Flower.PARTS.map(p=>`<dt>${p.name}</dt><dd>${p.opts[f.r[p.key]]}</dd>`).join('')}</dl></div>`);
+    paintIn(s);
+  }
+  /* growing animation: plays once per device for each new flower (only the newest when several arrive at once) */
+  let growing = false;
+  function checkNewFlower(L){
+    let seen = null; try{ seen = localStorage.getItem(SEEN); }catch(e){}
+    seen = seen==null ? 0 : +seen;
+    if(L.length < seen){ try{ localStorage.setItem(SEEN, String(L.length)); }catch(e){} return; }
+    if(L.length > seen && !growing){ growing = true; setTimeout(()=>playGrow(L[L.length-1]), 900); }
+  }
+  function playGrow(f){
+    const done = () => { try{ localStorage.setItem(SEEN, String(f.n)); }catch(e){} growing = false; el.remove(); };
+    const el = document.createElement('div'); el.className = 'grow'; el.setAttribute('role','dialog'); el.setAttribute('aria-label','新的花培育成功');
+    el.innerHTML = `<div class="gbox"><div class="ghead" id="gHead">培育中 · GROWING</div>
+      <div class="plate">${newsTV(f, null)}<div class="crt" style="margin-top:10px"><div class="stages">${STAGES.map(x=>`<span>${x}</span>`).join('')}</div></div></div>
+      <button class="key gbtn" id="gDone" hidden><span class="face">收進圖鑑<small>ADD TO COLLECTION</small></span></button>
+      <div class="skip" id="gSkip">點一下跳過</div></div>`;
+    layer.appendChild(el);
+    const tv = el.querySelector('.tv'), cv = el.querySelector('canvas'), st = [...el.querySelectorAll('.stages span')];
+    const scan = document.createElement('i'); scan.className = 'scan'; tv.appendChild(scan);
+    const ctx = cv.getContext('2d'); ctx.fillStyle = '#000'; ctx.fillRect(0,0,cv.width,cv.height);
+    const timers = [], at = (ms, fn) => timers.push(setTimeout(fn, ms));
+    const finish = () => { timers.forEach(clearTimeout); Flower.paint(cv, f.r); st.forEach(x=>x.className='done'); st[4].className='now';
+      tv.classList.add('on'); scan.remove(); $('gHead').textContent = '培育成功 · NEW FLOWER'; $('gDone').hidden = false; $('gSkip').hidden = true; };
+    $('gDone').onclick = e => { e.stopPropagation(); done(); render(); };
+    el.addEventListener('click', e => { if($('gDone').hidden) finish(); });
+    if(matchMedia('(prefers-reduced-motion: reduce)').matches){ finish(); return; }
+    // 1) stages light up one by one  2) the picture resolves from big blocks to full detail  3) the news caption slides in
+    st.forEach((x,i)=>at(250+i*380, ()=>{ st.forEach((y,j)=>y.className = j<i?'done':j===i?'now':''); }));
+    [4,6,8,12,16,24,32,48,64,96].forEach((px,i)=>at(2100+i*170, ()=>{ Flower.paint(cv, f.r, px); scan.style.top = (i*11-20)+'%'; }));
+    at(2100+10*170+150, finish);
+  }
+
   function renderOutlook(D){
     const o = events.find(e=>e.id==='o-'+D.today), it = o ? o.items : ['','',''], dn = o ? (o.done||[]) : [];
     const has = it.some(Boolean);
@@ -835,6 +976,8 @@ button.sync{font:inherit;border:0;cursor:pointer}
       } else checkIn(g);
       return;
     }
+    const fl = e.target.closest('[data-flower]');
+    if(fl){ openFlower(+fl.dataset.flower); return; }
     const soon = e.target.closest('[data-soon]');
     if(soon){ toast(`「${soon.dataset.soon}」下一版再做`); return; }
     const nv = e.target.closest('nav [data-view]');
