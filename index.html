@@ -166,6 +166,46 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
 .gk.pulse .slot{animation:pulse .5s}
 @keyframes pulse{40%{filter:brightness(1.8)}}
 
+/* goal tile: mono screen with 1..N and a green arrow at the current count, round orange button below */
+.gk{align-items:center;gap:10px;padding:10px 10px 12px;cursor:default}
+.gk:active{transform:none;box-shadow:inset 0 1px 0 rgba(255,255,255,.1),0 3px 0 #0a0908,0 6px 10px rgba(0,0,0,.5)}
+.mono{align-self:stretch;position:relative;border-radius:7px;padding:8px 8px 6px;text-align:center;
+  background:radial-gradient(ellipse at center,#0e2412 0%,var(--crt) 80%);color:var(--phosphor);text-shadow:0 0 5px rgba(142,245,154,.55);
+  box-shadow:inset 0 0 0 2px #0a0908,inset 0 0 0 3px #3a362e,inset 0 2px 8px rgba(0,0,0,.8)}
+.mono::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(0,0,0,.28) 0 1px,transparent 1px 3px)}
+.mono .mn{font-size:14px;font-weight:500;letter-spacing:.08em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mono .ns,.mono .ar{display:grid;font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.mono .ns{font-size:19px;line-height:1.2;margin-top:2px}
+.mono .ns span{opacity:.3;text-shadow:none}
+.mono .ns span.on{opacity:1;text-shadow:0 0 6px rgba(142,245,154,.8)}
+.mono .ar{font-size:11px;height:13px;line-height:13px}
+.mono .xt{position:absolute;right:7px;top:6px;font-family:var(--f-mono);font-size:11px}
+.mono .au{font-family:var(--f-mono);font-size:19px;line-height:1.2;margin-top:2px}
+.gk.done .mono .mn::after{content:" ✓"}
+.gk.pulse .mono{animation:pulse .5s}
+.obtn{width:54px;height:54px;border-radius:50%;border:0;padding:5px;cursor:pointer;flex:none;
+  background:radial-gradient(circle at 50% 35%,#77706a,#2a2723 60%,#121110);box-shadow:0 0 0 2px #0a0908,0 3px 6px rgba(0,0,0,.7)}
+.obtn i{display:grid;place-items:center;width:100%;height:100%;border-radius:50%;font-style:normal;font:600 24px/1 var(--f-ui);color:#3a1600;
+  background:radial-gradient(circle at 45% 38%,#ffb170,#ff7a1a 55%,#c4500c);box-shadow:0 0 0 2px #c9a982,inset 0 -3px 5px rgba(0,0,0,.35),0 0 10px rgba(255,122,26,.45)}
+.obtn:active{transform:translateY(2px)}
+.obtn:active i{filter:brightness(1.15)}
+.obtn.off i{background:radial-gradient(circle at 45% 38%,#5a4a3c,#3a2c20 60%,#241a12);box-shadow:0 0 0 2px #6a5c4c,inset 0 -3px 5px rgba(0,0,0,.35)}
+.obtn.off{cursor:default}
+/* today outlook (CRT) */
+.outlook{cursor:pointer}
+.outlook .ol{display:flex;gap:8px;align-items:baseline;padding:3px 0;width:100%;background:none;border:0;color:inherit;font:inherit;text-align:left;cursor:pointer;text-shadow:inherit}
+.outlook .ol b{font-weight:400;flex:none;white-space:nowrap}
+.outlook .ol.done span{text-decoration:line-through;opacity:.55}
+.outlook .ol.empty span{opacity:.45}
+.outlook .olh{display:flex;justify-content:space-between;align-items:baseline}
+.outlook .olh button{background:none;border:1px solid rgba(142,245,154,.45);border-radius:4px;color:var(--phosphor);font:12px var(--f-mono);padding:2px 8px;cursor:pointer}
+/* timeline: thin grey line joining the lights */
+.tl .it{position:relative}
+.tl .it:not(:last-child)::after{content:"";position:absolute;left:66px;top:21px;bottom:-9px;width:1px;background:#4a453c}
+.tl .dot{position:relative;z-index:1}
+.presets{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.addrow{display:flex;justify-content:flex-end;margin-top:12px}
+
 /* quick */
 .quick{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .btn-metal{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 14px;border-radius:7px;font-size:13px;
@@ -300,7 +340,7 @@ button.sync{font:inherit;border:0;cursor:pointer}
       </div>
     </section>
 
-    <div class="crt"><div class="screen">
+    <div class="crt"><div class="screen outlook" aria-label="本日展望">
       <i class="brk tl"></i><i class="brk tr"></i><i class="brk bl"></i><i class="brk br"></i>
       <div class="lines" id="crtLines">&gt; 載入中<span class="blink">_</span></div>
     </div></div>
@@ -315,19 +355,20 @@ button.sync{font:inherit;border:0;cursor:pointer}
     </section>
 
     <section class="plate" aria-label="每週目標">
-      <div class="hdr" style="margin-bottom:10px;padding:0 6px"><span class="label">WEEKLY GOALS · 按一下打卡</span></div>
+      <div class="hdr" style="margin-bottom:10px;padding:0 6px"><span class="label">WEEKLY GOALS · 按橘色按鈕打卡</span></div>
       <div class="grid" id="goals"></div>
     </section>
 
     <section class="plate" aria-label="今天的紀錄">
       <div class="quick">
         <button class="btn-metal" id="openBody">身體狀態<span id="bodyTag">BODY</span></button>
-        <button class="btn-metal" data-soon="服藥紀錄">服藥<span>MEDS</span></button>
+        <button class="btn-metal" id="openMeds">服藥<span>MEDS</span></button>
         <button class="btn-metal" id="openJournal">感恩三件事<span id="jTag">JOURNAL</span></button>
       </div>
     </section>
 
     <section class="plate bill" id="bill"></section>
+    <section class="plate bill" id="nest"></section>
   </div>
 
   <!-- TIMELINE -->
@@ -338,7 +379,7 @@ button.sync{font:inherit;border:0;cursor:pointer}
       <button class="btn-metal" id="dNext" aria-label="後一天">›</button>
     </div>
     <div class="tl" id="tl"></div>
-    <div class="row-end"><button class="btn-metal" id="openNote">＋ 快速記一筆事情</button></div>
+    <div class="addrow"><button class="obtn" id="openNote" aria-label="快速記一筆事情"><i>+</i></button></div>
   </section>
 
   <!-- WORLD -->
@@ -379,6 +420,9 @@ button.sync{font:inherit;border:0;cursor:pointer}
     {id:'bk', name:'看書', target:4},
     {id:'wf', name:'澆花', target:5},
   ];
+  const MEDS = [{name:'安平靜', dose:'0.25 毫克'}];
+  const NOTE_PRESETS = ['起床','午睡','開始休息','夜間手機隔離','工作'];
+  const NEST_EVERY = 15;
   const MOODS = ['很低落','有點悶','普通','不錯','很好'];
   const SYMPTOMS = ['頭痛','經期','腰痠','胃不舒服','很累','焦慮','失眠'];
   const CATS = ['吃的','交通','日用品','娛樂','其他'];
@@ -578,27 +622,21 @@ button.sync{font:inherit;border:0;cursor:pointer}
     vbar($('mBudget'), frac); $('vBudget').textContent=Math.round(frac*100)+'%';
     vbar($('mPts'), (D.points%500)/500); $('vPts').textContent=fmt(D.points);
 
-    const pending = GOALS.filter(g=>D.counts[g.id]<g.target).map(g=>`${g.name}差${g.target-D.counts[g.id]}`);
-    const checks = D.thisWeek.filter(e=>e.kind==='check').length;
-    typeCRT([
-      `> 本週已打卡 ${checks} 次`,
-      pending.length ? `> 還差：${pending.slice(0,2).join('、')}${pending.length>2?' 等':''}` : `> 本週目標全部達成`,
-      `> 下一張貼紙還要 ${500 - D.points%500} 點`]);
+    renderOutlook(D);
 
     $('goals').innerHTML = GOALS.map(g=>{
-      const c = D.counts[g.id], done = c>=g.target;
-      const segs = Array.from({length:g.target},(_,i)=>`<i class="${i<c?'on':''}"></i>`).join('');
-      const st = done ? (c>g.target?`達成 +${c-g.target}`:'達成') : `還差 ${g.target-c}`;
-      return `<button class="gk ${done?'done':''}" data-goal="${g.id}" aria-label="${g.name}，${c}/${g.target}，按一下打卡">
-        <span class="slot" style="grid-template-columns:repeat(${g.target},1fr)">${segs}</span>
-        <span class="nm">${g.name}</span>
-        <span class="ct"><span class="num">${c}<small>/${g.target}</small></span><span class="st">${st}</span></span></button>`;
+      const c = D.counts[g.id], done = c>=g.target, cols = `grid-template-columns:repeat(${g.target},1fr)`;
+      const ns = Array.from({length:g.target},(_,i)=>`<span class="${i<c?'on':''}">${(i+1)%10}</span>`).join('');
+      const ar = Array.from({length:g.target},(_,i)=>`<span>${i===Math.min(c,g.target)-1?'▲':''}</span>`).join('');
+      return `<div class="gk ${done?'done':''}" data-tile="${g.id}">
+        <div class="mono">${c>g.target?`<span class="xt">+${c-g.target}</span>`:''}<div class="mn">${g.name}</div>
+          <div class="ns" style="${cols}">${ns}</div><div class="ar" style="${cols}">${ar}</div></div>
+        <button class="obtn" data-goal="${g.id}" aria-label="${g.name} 打卡，目前 ${c}/${g.target}"><i></i></button></div>`;
     }).join('') + (()=>{
       const ok = D.left>=0;
-      return `<div class="gk auto ${ok?'done':''}">
-        <span class="slot" style="grid-template-columns:repeat(10,1fr)">${Array.from({length:10},(_,i)=>`<i class="${i<Math.round(frac*10)?'on':''}"></i>`).join('')}</span>
-        <span class="nm">花費 &lt; 3,000</span>
-        <span class="ct"><span class="num" style="font-size:15px">AUTO</span><span class="st">${ok?'預算內':'超過了'}</span></span></div>`;
+      return `<div class="gk ${ok?'done':''}">
+        <div class="mono"><div class="mn">花費 &lt; 3,000</div><div class="au">${ok?'預算內':'超過了'}</div><div class="ar">AUTO</div></div>
+        <span class="obtn off" aria-hidden="true"><i></i></span></div>`;
     })() + ((GOALS.length+1)%2 ? `<div class="gk hazard" aria-hidden="true"><span class="hz"></span></div>` : '');
 
     const body = D.thisWeek.filter(e=>e.kind==='body'&&e.day===D.today).length;
@@ -609,9 +647,46 @@ button.sync{font:inherit;border:0;cursor:pointer}
     $('openJournal').classList.toggle('did', !!j);
 
     renderBill(D);
+    renderNest(D);
     renderTimeline();
     if(!$('vJournal').hidden) renderSlots();
     $('worldPts').innerHTML = `獎勵會放在這裡<br>目前累積 ${fmt(D.points)} 點`;
+  }
+
+  /* today's outlook: three things for today on the CRT; tap one to tick it off */
+  function renderOutlook(D){
+    const o = events.find(e=>e.id==='o-'+D.today), it = o ? o.items : ['','',''], dn = o ? (o.done||[]) : [];
+    const has = it.some(Boolean);
+    const lines = has
+      ? it.map((t,i)=> t ? `<button class="ol ${dn[i]?'done':''}" data-ol="${i}"><b>${dn[i]?'[✓]':'[ ]'}</b><span>${esc(t)}</span></button>` : '').join('')
+      : `<button class="ol empty" data-ol="edit"><b>&gt;</b><span>點這裡寫下今天想做的三件事</span></button>`;
+    const allDone = has && it.every((t,i)=>!t||dn[i]);
+    $('crtLines').innerHTML = `<div class="olh"><span>&gt; 本日展望</span>${has?'<button data-ol="edit">編輯</button>':''}</div>${lines}<div>&gt; ${allDone?'今天的展望都完成了':'待命中'}<span class="blink">_</span></div>`;
+  }
+  $('crtLines').addEventListener('click', async e=>{
+    const b = e.target.closest('[data-ol]'); if(!b) return;
+    const today = dayKey(new Date()), id = 'o-'+today, o = events.find(x=>x.id===id);
+    if(b.dataset.ol==='edit'){ openOutlook(o); return; }
+    const i = +b.dataset.ol, done = [...(o.done||[false,false,false])]; done[i] = !done[i];
+    const pts = 5*done.filter((d,j)=>d&&o.items[j]).length;
+    const { id:_, ...rest } = o;
+    await api.put(id, {...rest, done, pts});
+    if(done[i]) toast(`完成：${o.items[i]} +5`);
+  });
+  function openOutlook(o){
+    const it = o ? o.items : ['','',''];
+    const s = sheet(`<h2>本日展望</h2><p style="margin:0 0 10px;color:var(--ink-dim);font-size:14px">今天想做的三件事。完成時在主畫面點一下就會打勾。</p>
+      <div class="opts">${[0,1,2].map(i=>`<input class="field" id="ol${i}" maxlength="60" placeholder="${i+1}." value="${esc(it[i]||'')}">`).join('')}</div>
+      <div class="row-end"><button class="key" id="olSave"><span class="face">存起來</span></button></div>`);
+    setTimeout(()=>s.querySelector('#ol0').focus(),50);
+    s.querySelector('#olSave').onclick=async()=>{
+      const items=[0,1,2].map(i=>s.querySelector('#ol'+i).value.trim());
+      const done=(o&&o.done||[false,false,false]).map((d,i)=>d && items[i]===(o.items[i]||''));
+      s.remove();
+      const now=new Date(), data=o?{...o}:{kind:'outlook', ts:now.getTime(), day:dayKey(now), week:weekKey(now)};
+      delete data.id;
+      await api.put('o-'+dayKey(now), {...data, items, done, pts:5*done.filter((d,i)=>d&&items[i]).length});
+    };
   }
 
   /* CRT typewriter: types new text out character by character, cursor blinks at the end */
@@ -640,6 +715,18 @@ button.sync{font:inherit;border:0;cursor:pointer}
     const b=$('billDone'); if(b) b.onclick=async()=>{ const id=await add('bill',{pts:20}); toast('帳務處理完成 +20', ()=>api.del(id)); };
   }
 
+  function renderNest(D){
+    const last = events.filter(e=>e.kind==='chore'&&e.task==='nest').map(e=>e.day).sort().pop();
+    const today = parseDay(D.today), doneToday = last===D.today;
+    const due = last ? new Date(parseDay(last).getTime()) : today;
+    if(last) due.setDate(due.getDate()+NEST_EVERY);
+    const diff = Math.round((due - today)/864e5);
+    $('nest').innerHTML = !doneToday && diff<=0
+      ? `<span>${diff<0?`該整理黑炭的窩了（晚了 ${-diff} 天）`:'今天要整理黑炭的窩'}</span><button class="key" id="nestDone"><span class="face">完成</span></button>`
+      : `<span>整理黑炭的窩${doneToday?' · 今天完成了':''}</span><span class="label">NEXT · <b>${pad(due.getMonth()+1)}/${pad(due.getDate())}</b> · 還有 ${diff} 天</span>`;
+    const b=$('nestDone'); if(b) b.onclick=async()=>{ const id=await add('chore',{task:'nest', pts:20}); toast('黑炭的窩整理好了 +20', ()=>api.del(id)); };
+  }
+
   /* ---------- timeline ---------- */
   let tlDay = new Date();
   function describe(e){
@@ -651,6 +738,9 @@ button.sync{font:inherit;border:0;cursor:pointer}
       case 'journal': return {t:'寫了手帳', s:esc(e.memory||''), c:'g'};
       case 'note': return {t:esc(e.text), s:'', c:'d'};
       case 'bill': return {t:'處理帳務', s:`+${e.pts} 點`, c:''};
+      case 'chore': return {t:'整理黑炭的窩', s:`+${e.pts} 點`, c:''};
+      case 'med': return {t:`服藥：${esc(e.med)} ${esc(e.dose||'')}`, s:'', c:'g'};
+      case 'outlook': return {t:'寫下本日展望', s:esc((e.items||[]).filter(Boolean).map((t,i)=>(e.done&&e.done[i]?'✓ ':'')+t).join(' · ')), c:'g'};
       default: return {t:e.kind, s:'', c:'d'};
     }
   }
@@ -730,10 +820,10 @@ button.sync{font:inherit;border:0;cursor:pointer}
     else toast(`${g.name}${rest?'（'+rest+'）':''} 打卡 +${pts}`, ()=>api.del(id));
   }
   document.addEventListener('click', e=>{
-    const k = e.target.closest('.gk[data-goal]');
+    const k = e.target.closest('.obtn[data-goal]');
     if(k){
       const g = GOALS.find(x=>x.id===k.dataset.goal);
-      k.classList.remove('pulse'); void k.offsetWidth; k.classList.add('pulse');
+      const tile = k.closest('.gk'); tile.classList.remove('pulse'); void tile.offsetWidth; tile.classList.add('pulse');
       if(g.rest){
         const s = sheet(`<h2>這次是怎麼休息的？</h2><div class="opts">${g.rest.map(x=>`<button class="btn-metal" data-r="${x}">${x}<span class="label">+10</span></button>`).join('')}</div>`);
         s.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{ s.remove(); checkIn(g, b.dataset.r); });
@@ -842,7 +932,7 @@ button.sync{font:inherit;border:0;cursor:pointer}
       <h3>值得回憶的事</h3><textarea class="field" id="jm" rows="3" maxlength="300" placeholder="${isToday?'今天':'那天'}發生了什麼想記住的事？">${esc(ex.memory||'')}</textarea>
       <h3>感恩的三件事</h3>
       <div class="opts">${[0,1,2].map(i=>`<input class="field" id="jg${i}" maxlength="100" placeholder="${i+1}." value="${esc(g[i]||'')}">`).join('')}</div>
-      ${items?`<h3>這天的紀錄</h3><div class="tl">${items}</div>`:''}
+      ${items?`<h3>時間軸</h3><div class="tl">${items}</div>`:''}
       <div class="row-end"><button class="key" id="jSave"><span class="face">存檔</span></button></div>`);
     s.querySelector('#jSave').onclick=async()=>{
       const memory=s.querySelector('#jm').value.trim();
@@ -861,10 +951,27 @@ button.sync{font:inherit;border:0;cursor:pointer}
 
   /* ---------- quick note on timeline ---------- */
   $('openNote').onclick=()=>{
-    const s = sheet(`<h2>快速記一筆事情</h2><input class="field" id="nt" maxlength="120" placeholder="例如：去郵局寄包裹">
+    const s = sheet(`<h2>快速記一筆事情</h2>
+      <div class="presets">${NOTE_PRESETS.map(t=>`<button class="chip" data-p="${t}">${t}</button>`).join('')}</div>
+      <input class="field" id="nt" maxlength="120" placeholder="或自己打，例如：去郵局寄包裹">
       <div class="row-end"><button class="key" id="nSave"><span class="face">記下來</span></button></div>`);
-    setTimeout(()=>s.querySelector('#nt').focus(),50);
-    s.querySelector('#nSave').onclick=async()=>{ const t=s.querySelector('#nt').value.trim(); if(!t) return; s.remove(); await add('note',{text:t}); tlDay=new Date(); renderTimeline(); };
+    const save = async t => { s.remove(); await add('note',{text:t}); tlDay=new Date(); renderTimeline(); };
+    s.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>save(b.dataset.p));
+    s.querySelector('#nSave').onclick=()=>{ const t=s.querySelector('#nt').value.trim(); if(t) save(t); };
+  };
+
+  /* ---------- meds: log a dose with its time; nothing stays marked on the button ---------- */
+  $('openMeds').onclick=()=>{
+    const now=new Date();
+    const s = sheet(`<h2>服藥</h2>
+      <h3>時間</h3><input class="field" id="mdT" type="time" value="${pad(now.getHours())}:${pad(now.getMinutes())}">
+      <h3>吃了哪一個</h3><div class="opts">${MEDS.map((m,i)=>`<button class="btn-metal" data-m="${i}">${esc(m.name)}<span class="label">${esc(m.dose)}</span></button>`).join('')}</div>`);
+    s.querySelectorAll('[data-m]').forEach(b=>b.onclick=async()=>{
+      const m=MEDS[+b.dataset.m], [hh,mm]=(s.querySelector('#mdT').value||'').split(':').map(Number);
+      const t=new Date(); if(!isNaN(hh)) t.setHours(hh, mm||0, 0, 0);
+      s.remove();
+      await api.put(newId(), {kind:'med', med:m.name, dose:m.dose, ts:t.getTime(), day:dayKey(t), week:weekKey(t)});
+    });
   };
 
   render();
