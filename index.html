@@ -262,7 +262,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
 /* nav: radio tuning dial — orange needle slides to the current tab */
 nav{position:fixed;left:0;right:0;bottom:0;padding:8px 12px calc(10px + env(safe-area-inset-bottom,0px));z-index:10;
   background:linear-gradient(#2a2722,#181613);border-top:1px solid var(--edge);display:flex;justify-content:center}
-nav .in{position:relative;display:grid;grid-template-columns:repeat(3,1fr);width:100%;max-width:440px;border-radius:6px;padding:0 4px;
+nav .in{position:relative;display:grid;grid-template-columns:repeat(4,1fr);width:100%;max-width:440px;border-radius:6px;padding:0 4px;
   background:linear-gradient(180deg,#14100a,#1d160d);box-shadow:inset 0 0 0 1px #3a3128,inset 0 2px 6px rgba(0,0,0,.8)}
 nav .in::before{content:"";position:absolute;left:10px;right:10px;top:6px;height:8px;pointer-events:none;
   background:repeating-linear-gradient(90deg,rgba(244,234,208,.55) 0 1px,transparent 1px 9px);opacity:.6}
@@ -306,6 +306,35 @@ nav .needle{position:absolute;z-index:2;top:2px;height:20px;width:2px;margin-lef
   display:flex;gap:14px;align-items:center;padding:10px 14px;border-radius:8px;background:#0b0a09;border:1px solid var(--edge);font-size:13px}
 .toast button{color:var(--orange);font-family:var(--f-ui);letter-spacing:.08em;white-space:nowrap}
 .world{text-align:center;padding:30px 10px}
+/* brain map: quick add + four quadrants; finished items stay (struck through today, then folded under 已完成) */
+#vBrain{display:flex;flex-direction:column;gap:12px}
+#vBrain[hidden]{display:none}
+.bm-add{display:grid;gap:10px}
+.bm-add .field{font-size:16px}
+.bm-cats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.bm-cats button{padding:7px 0;border-radius:6px;font-size:13px;color:var(--ink-dim);background:var(--plate-lo);box-shadow:inset 0 0 0 1px #3c372f}
+.bm-cats button.on{color:var(--crt);background:var(--phosphor);box-shadow:0 0 8px rgba(142,245,154,.4);font-weight:700}
+.bm-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.quad{position:relative;border-radius:10px;padding:10px 10px 8px;background:var(--crt);box-shadow:inset 0 0 0 2px #3c372f,inset 0 0 0 5px #14120f;color:var(--phosphor);min-height:170px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.quad::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(0,0,0,.25) 0 1px,transparent 1px 3px)}
+.quad .qh{display:flex;justify-content:space-between;align-items:baseline;gap:6px;padding:2px 2px 4px;border-bottom:1px solid var(--phosphor-dim);text-align:left;color:inherit;text-shadow:0 0 6px rgba(142,245,154,.45)}
+.quad .qh b{font-size:14px;letter-spacing:.08em}
+.quad .qh span{font:12px var(--f-mono);opacity:.8;white-space:nowrap}
+.qi{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:4px;align-items:center;font-size:13px;line-height:1.35}
+.qi .cb{width:20px;height:20px;display:grid;place-items:center;font:13px var(--f-mono);color:var(--phosphor);border:1px solid var(--phosphor-dim);border-radius:3px}
+.qi .tx{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:left;color:var(--phosphor)}
+.qi .age{font:10px var(--f-mono);color:var(--warn);white-space:nowrap}
+.qi.done .tx{text-decoration:line-through;opacity:.45}
+.qi.done .cb{background:var(--phosphor-dim);color:var(--crt)}
+.quad .more{margin-top:auto;font:11px var(--f-mono);letter-spacing:.06em;color:var(--phosphor);opacity:.7;text-align:left;padding:2px}
+.quad .none{font-size:12px;opacity:.45;padding:4px 2px}
+.bm-sheet .qi{font-size:15px;padding:6px 0;border-bottom:1px solid #2b2620;grid-template-columns:26px minmax(0,1fr) auto auto}
+.bm-sheet .qi .tx{white-space:normal;color:var(--ink)}
+.bm-sheet .qi .cb{width:22px;height:22px}
+.bm-sheet .del{width:32px;height:32px;color:var(--ink-dim);font-size:16px}
+.bm-sheet h3{display:flex;justify-content:space-between}
+.bm-sheet .fold{width:100%;text-align:left;padding:10px 0 4px;color:var(--ink-dim);font-size:13px;letter-spacing:.06em}
+.bm-sheet .empty{font-size:13px;color:var(--ink-dim);padding:8px 0}
 /* another world: news TV, seed meter, collection */
 #vWorld{display:flex;flex-direction:column;gap:14px}
 #vWorld[hidden]{display:none}
@@ -479,6 +508,16 @@ button.sync{font:inherit;border:0;cursor:pointer}
 
   <!-- WORLD -->
   <!-- JOURNAL: save slots -->
+  <section id="vBrain" hidden aria-label="大腦地圖">
+    <div class="hdr" style="padding:0 6px"><span class="label">BRAIN MAP · 大腦地圖</span><span class="label" id="bmSum"></span></div>
+    <form class="plate bm-add" id="bmAdd" autocomplete="off">
+      <input class="field" id="bmText" maxlength="80" placeholder="腦袋裡冒出什麼？" aria-label="新增一件事">
+      <div class="bm-cats" id="bmCats" role="radiogroup" aria-label="分類"></div>
+      <button class="key" type="submit"><span class="face">放進地圖</span></button>
+    </form>
+    <div class="bm-grid" id="bmGrid"></div>
+  </section>
+
   <section id="vJournal" hidden aria-label="日誌存檔">
     <div class="hdr" style="margin-bottom:10px"><span class="label">SAVE DATA · 一天一格存檔</span><span class="label" id="saveCount"></span></div>
     <div class="slots" id="slots"></div>
@@ -494,6 +533,7 @@ button.sync{font:inherit;border:0;cursor:pointer}
 
 <nav><div class="in">
   <button class="on" data-view="vToday"><span>控制室</span><small>CONTROL</small></button>
+  <button data-view="vBrain"><span>大腦地圖</span><small>BRAIN</small></button>
   <button data-view="vJournal"><span>日誌</span><small>LOG</small></button>
   <button data-view="vWorld"><span>培育室</span><small>GROW</small></button>
   <i class="needle" aria-hidden="true"></i>
@@ -744,6 +784,7 @@ button.sync{font:inherit;border:0;cursor:pointer}
     $('openJournal').classList.toggle('did', !!j);
 
     renderTimeline();
+    renderBrain();
     renderBill(D);
     renderNest(D);
     renderTimeline();
@@ -832,6 +873,61 @@ button.sync{font:inherit;border:0;cursor:pointer}
     [4,6,8,12,16,24,32,48,64,96].forEach((px,i)=>at(2100+i*170, ()=>{ Flower.paint(cv, f.r, px); scan.style.top = (i*11-20)+'%'; }));
     at(2100+10*170+150, finish);
   }
+
+  /* ---------- brain map: quick to-dos in four groups ---------- */
+  const BM_CATS = [{id:'shop',name:'購物清單'},{id:'work',name:'工作'},{id:'make',name:'創作'},{id:'learn',name:'學習'}];
+  const BM_SHOW = 4, BM_OLD = 7;  // items shown per quadrant; days before an open item is marked as sitting a while
+  let bmCat = 'shop'; try{ bmCat = localStorage.getItem('growtion-bm-cat') || 'shop'; }catch(e){}
+  const todos = () => events.filter(e=>e.kind==='todo');
+  const daysOld = t => Math.floor((Date.now()-t)/864e5);
+  const doneToday = e => e.done && dayKey(new Date(e.done))===dayKey(new Date());
+  function bmItem(e, full){
+    const age = !e.done && daysOld(e.ts)>=BM_OLD ? `<span class="age">${daysOld(e.ts)}天</span>` : '';
+    const when = full && e.done ? `<span class="age" style="color:var(--ink-dim)">${pad(new Date(e.done).getMonth()+1)}/${pad(new Date(e.done).getDate())}</span>` : '';
+    return `<div class="qi ${e.done?'done':''}"><button class="cb" data-bm-tick="${e.id}" aria-label="${e.done?'改回未完成':'完成'}：${esc(e.text)}">${e.done?'✓':''}</button><span class="tx">${esc(e.text)}</span>${age||when||'<span></span>'}${full?`<button class="del" data-bm-del="${e.id}" aria-label="刪掉：${esc(e.text)}">✕</button>`:''}</div>`;
+  }
+  function renderBrain(){
+    if(!$('bmGrid')) return;
+    const all = todos(), open = all.filter(e=>!e.done);
+    const weekDone = all.filter(e=>e.done && weekKey(new Date(e.done))===weekKey(new Date())).length;
+    $('bmSum').textContent = `未完成 ${open.length} · 本週完成 ${weekDone}`;
+    $('bmCats').innerHTML = BM_CATS.map(c=>`<button type="button" role="radio" aria-checked="${c.id===bmCat}" class="${c.id===bmCat?'on':''}" data-bm-cat="${c.id}">${c.name}</button>`).join('');
+    $('bmGrid').innerHTML = BM_CATS.map(c=>{
+      const mine = all.filter(e=>e.cat===c.id), op = mine.filter(e=>!e.done).sort((a,b)=>a.ts-b.ts), today = mine.filter(doneToday).sort((a,b)=>a.done-b.done);
+      const shown = op.slice(0, BM_SHOW), rest = op.length - shown.length, room = Math.max(0, BM_SHOW - shown.length);
+      const fin = mine.filter(e=>e.done).length;
+      return `<div class="quad"><button class="qh" data-bm-open="${c.id}"><b>${c.name}</b><span>${op.length} 件 ›</span></button>
+        ${shown.map(e=>bmItem(e)).join('')}${today.slice(0,room).map(e=>bmItem(e)).join('')}
+        ${!op.length && !today.length ? '<div class="none">清空了</div>' : ''}
+        <button class="more" data-bm-open="${c.id}">${rest>0?`還有 ${rest} 件 · `:''}已完成 ${fin}</button></div>`;
+    }).join('');
+  }
+  function openBrainCat(cat){
+    const c = BM_CATS.find(x=>x.id===cat); let showDone = false;
+    const s = sheet(`<div class="bm-sheet"><h2>${c.name}</h2><div id="bmList"></div></div>`);
+    const draw = () => {
+      const mine = todos().filter(e=>e.cat===cat), op = mine.filter(e=>!e.done).sort((a,b)=>a.ts-b.ts), dn = mine.filter(e=>e.done).sort((a,b)=>b.done-a.done);
+      s.querySelector('#bmList').innerHTML = (op.length ? op.map(e=>bmItem(e,true)).join('') : '<div class="empty">沒有待辦，清空了。</div>')
+        + `<button class="fold" id="bmFold">已完成 ${dn.length} ${showDone?'▾':'▸'}</button>` + (showDone ? dn.map(e=>bmItem(e,true)).join('') : '');
+      s.querySelector('#bmFold').onclick = () => { showDone = !showDone; draw(); };
+    };
+    s.redraw = draw; draw();
+  }
+  async function bmTick(id){
+    const e = events.find(x=>x.id===id); if(!e) return;
+    const {id:_, ...rest} = e; await api.put(id, {...rest, done: e.done ? null : Date.now()});
+    layer.querySelectorAll('.scrim').forEach(x=>x.redraw && x.redraw());
+  }
+  async function bmDel(id){
+    const e = events.find(x=>x.id===id); if(!e) return;
+    const {id:_, ...rest} = e; await api.del(id);
+    layer.querySelectorAll('.scrim').forEach(x=>x.redraw && x.redraw());
+    toast(`刪掉了「${e.text}」`, async()=>{ await api.put(id, rest); layer.querySelectorAll('.scrim').forEach(x=>x.redraw && x.redraw()); });
+  }
+  $('bmAdd').onsubmit = async ev => {
+    ev.preventDefault(); const t = $('bmText').value.trim(); if(!t) return;
+    $('bmText').value = ''; await api.put(newId(), {kind:'todo', cat:bmCat, text:t, ts:Date.now(), done:null});
+  };
 
   function renderOutlook(D){
     const o = events.find(e=>e.id==='o-'+D.today), it = o ? o.items : ['','',''], dn = o ? (o.done||[]) : [];
@@ -1005,6 +1101,11 @@ button.sync{font:inherit;border:0;cursor:pointer}
       } else checkIn(g);
       return;
     }
+    const bmc = e.target.closest('[data-bm-cat]');
+    if(bmc){ bmCat = bmc.dataset.bmCat; try{ localStorage.setItem('growtion-bm-cat', bmCat); }catch(_){} renderBrain(); return; }
+    const bmt = e.target.closest('[data-bm-tick]'); if(bmt){ bmTick(bmt.dataset.bmTick); return; }
+    const bmd = e.target.closest('[data-bm-del]'); if(bmd){ bmDel(bmd.dataset.bmDel); return; }
+    const bmo = e.target.closest('[data-bm-open]'); if(bmo){ openBrainCat(bmo.dataset.bmOpen); return; }
     const fl = e.target.closest('[data-flower]');
     if(fl){ openFlower(+fl.dataset.flower); return; }
     const soon = e.target.closest('[data-soon]');
@@ -1012,7 +1113,7 @@ button.sync{font:inherit;border:0;cursor:pointer}
     const nv = e.target.closest('nav [data-view]');
     if(nv){
       document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on', b===nv)); placeNeedle();
-      ['vToday','vJournal','vWorld'].forEach(v=>$(v).hidden = v!==nv.dataset.view);
+      ['vToday','vBrain','vJournal','vWorld'].forEach(v=>$(v).hidden = v!==nv.dataset.view);
       if(nv.dataset.view==='vJournal') renderSlots();
       window.scrollTo(0,0);
     }
