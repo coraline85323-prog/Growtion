@@ -335,6 +335,15 @@ nav .needle{position:absolute;z-index:2;top:2px;height:20px;width:2px;margin-lef
 .bm-sheet h3{display:flex;justify-content:space-between}
 .bm-sheet .fold{width:100%;text-align:left;padding:10px 0 4px;color:var(--ink-dim);font-size:13px;letter-spacing:.06em}
 .bm-sheet .empty{font-size:13px;color:var(--ink-dim);padding:8px 0}
+/* dream board: images only, square-cropped with the CRT look baked in at upload */
+.dream{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.dream button{position:relative;aspect-ratio:1;border-radius:8px;overflow:hidden;padding:0;background:var(--crt);box-shadow:inset 0 0 0 2px #3c372f,0 0 0 1px #14120f}
+.dream img{display:block;width:100%;height:100%;object-fit:cover;filter:saturate(1.05)}
+.dream button::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;box-shadow:inset 0 0 0 2px #3c372f,inset 0 0 14px rgba(0,0,0,.55);background:radial-gradient(ellipse at 35% 25%,rgba(255,255,255,.08),transparent 55%)}
+.dream .addd{display:grid;place-items:center;color:var(--phosphor);font:28px var(--f-mono);text-shadow:0 0 8px rgba(142,245,154,.5);background:repeating-linear-gradient(0deg,rgba(0,0,0,.25) 0 1px,transparent 1px 3px),var(--crt)}
+.dream .addd.busy{animation:flick .6s steps(3) infinite}
+.dream-view img{display:block;width:100%;border-radius:10px;box-shadow:inset 0 0 0 2px #3c372f}
+.dream-view .row{display:flex;gap:8px;margin-top:12px}
 /* another world: news TV, seed meter, collection */
 #vWorld{display:flex;flex-direction:column;gap:14px}
 #vWorld[hidden]{display:none}
@@ -516,6 +525,9 @@ button.sync{font:inherit;border:0;cursor:pointer}
       <button class="key" type="submit"><span class="face">放進地圖</span></button>
     </form>
     <div class="bm-grid" id="bmGrid"></div>
+    <div class="hdr" style="padding:6px 6px 0"><span class="label">DREAM BOARD · 夢想版</span><span class="label" id="drSum"></span></div>
+    <div class="dream" id="dream"></div>
+    <input type="file" id="drFile" accept="image/*" multiple hidden>
   </section>
 
   <section id="vJournal" hidden aria-label="日誌存檔">
@@ -784,7 +796,7 @@ button.sync{font:inherit;border:0;cursor:pointer}
     $('openJournal').classList.toggle('did', !!j);
 
     renderTimeline();
-    renderBrain();
+    renderBrain(); renderDream();
     renderBill(D);
     renderNest(D);
     renderTimeline();
@@ -923,6 +935,60 @@ button.sync{font:inherit;border:0;cursor:pointer}
     const {id:_, ...rest} = e; await api.del(id);
     layer.querySelectorAll('.scrim').forEach(x=>x.redraw && x.redraw());
     toast(`刪掉了「${e.text}」`, async()=>{ await api.put(id, rest); layer.querySelectorAll('.scrim').forEach(x=>x.redraw && x.redraw()); });
+  }
+  /* ---------- dream board ---------- */
+  const dreams = () => events.filter(e=>e.kind==='dream').sort((a,b)=>a.ts-b.ts);
+  function renderDream(){
+    if(!$('dream')) return;
+    const d = dreams();
+    $('drSum').textContent = d.length ? `${d.length} 張` : '';
+    $('dream').innerHTML = d.map(e=>`<button data-dream="${e.id}" aria-label="夢想圖"><img src="${e.img}" alt="" loading="lazy"></button>`).join('')
+      + `<button class="addd" id="drAdd" aria-label="加入圖片">＋</button>`;
+  }
+  // centre-crop to a square, then bake in an old-TV look: warm phosphor tint, RGB fringe, scanlines, grain, vignette
+  function crtify(img){
+    const N = 420, c = document.createElement('canvas'); c.width = c.height = N;
+    const x = c.getContext('2d'), w = img.naturalWidth || img.width, h = img.naturalHeight || img.height, m = Math.min(w,h);
+    x.drawImage(img, (w-m)/2, (h-m)/2, m, m, 0, 0, N, N);
+    const src = x.getImageData(0,0,N,N), a = src.data, out = x.createImageData(N,N), o = out.data;
+    const at = (px,py,ch) => a[((Math.min(N-1,Math.max(0,py))*N)+Math.min(N-1,Math.max(0,px)))*4+ch];
+    for(let py=0; py<N; py++){
+      const line = py%3===2 ? .72 : 1;
+      for(let px=0; px<N; px++){
+        const i = (py*N+px)*4, dx = (px-N/2)/(N/2), dy = (py-N/2)/(N/2);
+        const vig = Math.max(0, 1 - .42*(dx*dx+dy*dy)**1.2);
+        let r = at(px+2,py,0), g = a[i+1], b = at(px-2,py,2);
+        const l = .3*r+.59*g+.11*b;                       // pull colours a little toward luminance
+        r = l + (r-l)*.82; g = l + (g-l)*.82; b = l + (b-l)*.82;
+        r = (r-128)*1.12+128+10; g = (g-128)*1.12+128+4; b = (b-128)*1.12+128-8;   // contrast + warm
+        const n = (Math.random()-.5)*16, k = line*vig;
+        o[i] = Math.max(0,Math.min(255,(r+n)*k)); o[i+1] = Math.max(0,Math.min(255,(g+n)*k)); o[i+2] = Math.max(0,Math.min(255,(b+n)*k)); o[i+3] = 255;
+      }
+    }
+    x.putImageData(out,0,0);
+    // soft bloom on bright areas
+    x.globalCompositeOperation = 'screen'; x.globalAlpha = .18; x.filter = 'blur(3px)'; x.drawImage(c,0,0); x.filter = 'none'; x.globalAlpha = 1; x.globalCompositeOperation = 'source-over';
+    return c.toDataURL('image/jpeg', .74);
+  }
+  function loadImage(file){
+    return new Promise((ok,no)=>{ const u = URL.createObjectURL(file), im = new Image(); im.onload=()=>{ URL.revokeObjectURL(u); ok(im); }; im.onerror=()=>{ URL.revokeObjectURL(u); no(); }; im.src = u; });
+  }
+  $('drFile').onchange = async ev => {
+    const files = [...ev.target.files]; ev.target.value = ''; if(!files.length) return;
+    const btn = $('drAdd'); btn && btn.classList.add('busy');
+    let n = 0;
+    for(const f of files){
+      try{ const img = crtify(await loadImage(f)); await api.put(newId(), {kind:'dream', img, ts:Date.now()+n}); n++; }
+      catch(e){ toast('有一張圖讀不到，換一張試試'); }
+    }
+  };
+  function openDream(id){
+    const e = events.find(x=>x.id===id); if(!e) return;
+    const s = sheet(`<div class="dream-view"><img src="${e.img}" alt=""><div class="row"><button class="btn-metal" id="drDel" style="flex:1;padding:10px">從夢想版移除</button></div></div>`);
+    s.querySelector('#drDel').onclick = async () => {
+      const {id:_, ...rest} = e; s.remove(); await api.del(id);
+      toast('移除了一張圖', ()=>api.put(id, rest));
+    };
   }
   $('bmAdd').onsubmit = async ev => {
     ev.preventDefault(); const t = $('bmText').value.trim(); if(!t) return;
@@ -1106,6 +1172,8 @@ button.sync{font:inherit;border:0;cursor:pointer}
     const bmt = e.target.closest('[data-bm-tick]'); if(bmt){ bmTick(bmt.dataset.bmTick); return; }
     const bmd = e.target.closest('[data-bm-del]'); if(bmd){ bmDel(bmd.dataset.bmDel); return; }
     const bmo = e.target.closest('[data-bm-open]'); if(bmo){ openBrainCat(bmo.dataset.bmOpen); return; }
+    if(e.target.closest('#drAdd')){ $('drFile').click(); return; }
+    const dr = e.target.closest('[data-dream]'); if(dr){ openDream(dr.dataset.dream); return; }
     const fl = e.target.closest('[data-flower]');
     if(fl){ openFlower(+fl.dataset.flower); return; }
     const soon = e.target.closest('[data-soon]');
