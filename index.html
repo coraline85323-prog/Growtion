@@ -211,6 +211,13 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
 .presets{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
 .addrow{display:flex;justify-content:flex-end;margin-top:12px}
 .addkey{width:auto}
+.tlmini .tlhead{display:flex;justify-content:space-between;align-items:baseline;padding:0 6px;margin-bottom:6px}
+.tlmini .tlall{color:var(--orange-hot)}
+.tlmini .tlrow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center}
+.tlmini .addkey .face{width:52px;height:46px;font-size:22px}
+.tlmini .tl .tx{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tlmini .tl .tx small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tlmini .empty{font-size:13px;color:var(--ink-dim);padding:6px}
 .addkey .face{width:52px;height:46px;padding:0;font:600 26px/1 var(--f-ui)}
 
 /* quick */
@@ -242,7 +249,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
 /* nav: radio tuning dial — orange needle slides to the current tab */
 nav{position:fixed;left:0;right:0;bottom:0;padding:8px 12px calc(10px + env(safe-area-inset-bottom,0px));z-index:10;
   background:linear-gradient(#2a2722,#181613);border-top:1px solid var(--edge);display:flex;justify-content:center}
-nav .in{position:relative;display:grid;grid-template-columns:repeat(4,1fr);width:100%;max-width:440px;border-radius:6px;padding:0 4px;
+nav .in{position:relative;display:grid;grid-template-columns:repeat(3,1fr);width:100%;max-width:440px;border-radius:6px;padding:0 4px;
   background:linear-gradient(180deg,#14100a,#1d160d);box-shadow:inset 0 0 0 1px #3a3128,inset 0 2px 6px rgba(0,0,0,.8)}
 nav .in::before{content:"";position:absolute;left:10px;right:10px;top:6px;height:8px;pointer-events:none;
   background:repeating-linear-gradient(90deg,rgba(244,234,208,.55) 0 1px,transparent 1px 9px);opacity:.6}
@@ -418,6 +425,12 @@ button.sync{font:inherit;border:0;cursor:pointer}
       <div class="lines" id="crtLines">&gt; 載入中<span class="blink">_</span></div>
     </div></div>
 
+    <section class="plate tlmini" aria-label="時間軸">
+      <div class="tlhead"><span class="label">TIMELINE · 今天最新兩筆</span><button class="label tlall" id="tlAll">看完整 ›</button></div>
+      <div class="tlrow"><div class="tl" id="tl"></div>
+        <button class="key addkey" id="openNote" aria-label="快速記一筆事情"><span class="face">＋</span></button></div>
+    </section>
+
     <section class="plate fuelp" aria-label="剩餘預算">
       <div class="dashg" id="gFuel" role="img" aria-label="剩餘預算油箱表"></div>
       <div class="fstack">
@@ -444,16 +457,6 @@ button.sync{font:inherit;border:0;cursor:pointer}
     <section class="plate bill" id="nest"></section>
   </div>
 
-  <!-- TIMELINE -->
-  <section class="plate" id="vTimeline" hidden aria-label="時間軸">
-    <div class="daynav">
-      <button class="btn-metal" id="dPrev" aria-label="前一天">‹</button>
-      <span class="label" id="dLbl"></span>
-      <button class="btn-metal" id="dNext" aria-label="後一天">›</button>
-    </div>
-    <div class="tl" id="tl"></div>
-    <div class="addrow"><button class="key addkey" id="openNote" aria-label="快速記一筆事情"><span class="face">＋</span></button></div>
-  </section>
 
   <!-- WORLD -->
   <!-- JOURNAL: save slots -->
@@ -472,7 +475,6 @@ button.sync{font:inherit;border:0;cursor:pointer}
 
 <nav><div class="in">
   <button class="on" data-view="vToday"><span>控制室</span><small>CONTROL</small></button>
-  <button data-view="vTimeline"><span>時間軸</span><small>TIMELINE</small></button>
   <button data-view="vJournal"><span>日誌</span><small>LOG</small></button>
   <button data-view="vWorld"><span>培育室</span><small>GROW</small></button>
   <i class="needle" aria-hidden="true"></i>
@@ -718,6 +720,7 @@ button.sync{font:inherit;border:0;cursor:pointer}
     $('jTag').textContent = j ? '今天寫了' : 'JOURNAL';
     $('openJournal').classList.toggle('did', !!j);
 
+    renderTimeline();
     renderBill(D);
     renderNest(D);
     renderTimeline();
@@ -881,32 +884,28 @@ button.sync{font:inherit;border:0;cursor:pointer}
   }
 
   /* ---------- timeline ---------- */
-  let tlDay = new Date();
   function describe(e){
     const g = GOALS.find(x=>x.id===e.goal);
     switch(e.kind){
-      case 'check': return {t:`打卡：${g?g.name:e.goal}${e.rest?'（'+e.rest+'）':''}`, s:`+${e.pts} 點`, c:''};
+      case 'check': return {t:`打卡：${g?g.name:e.goal}${e.rest?'（'+e.rest+'）':''}`, s:`+${e.pts} 種子`, c:''};
       case 'spend': return {t:`花費 NT$${fmt(e.amt)}`, s:esc(e.cat||''), c:'d'};
       case 'body': return {t:`身體狀態：能量 ${e.energy??'-'} · ${esc(MOODS[e.mood]??'')}`, s:esc([...(e.sym||[]), e.sleep!=null?`睡 ${e.sleep} 小時`:'', e.note||''].filter(Boolean).join(' · ')), c:'g'};
       case 'journal': return {t:'寫了日誌', s:esc(e.memory||''), c:'g'};
       case 'note': return {t:esc(e.text), s:'', c:'d'};
-      case 'bill': return {t:'處理帳務', s:`+${e.pts} 點`, c:''};
-      case 'chore': return {t:'整理黑炭的窩', s:`+${e.pts} 點`, c:''};
+      case 'bill': return {t:'處理帳務', s:`+${e.pts} 種子`, c:''};
+      case 'chore': return {t:'整理黑炭的窩', s:`+${e.pts} 種子`, c:''};
       case 'med': return {t:`服藥：${esc(e.med)} ${esc(e.dose||'')}`, s:'', c:'g'};
       case 'outlook': return {t:'寫下本日展望', s:esc((e.items||[]).filter(Boolean).map((t,i)=>(e.done&&e.done[i]?'✓ ':'')+t).join(' · ')), c:'g'};
       default: return {t:e.kind, s:'', c:'d'};
     }
   }
   function renderTimeline(){
-    const k = dayKey(tlDay), isToday = k===dayKey(new Date());
-    $('dLbl').textContent = `${pad(tlDay.getMonth()+1)}/${pad(tlDay.getDate())} 週${DOW[tlDay.getDay()]}${isToday?' · 今天':''}`;
-    $('dNext').disabled = isToday; $('dNext').style.opacity = isToday?.35:1;
-    const list = events.filter(e=>e.day===k).sort((a,b)=>a.ts-b.ts);
+    const k = dayKey(new Date());
+    const list = events.filter(e=>e.day===k).sort((a,b)=>a.ts-b.ts).slice(-2);
     $('tl').innerHTML = list.length ? list.map(e=>{ const x=describe(e); return `<div class="it"><time>${hm(e.ts)}</time><i class="dot ${x.c}"></i><div class="tx">${x.t}${x.s?`<small>${x.s}</small>`:''}</div></div>`; }).join('')
-      : `<div class="empty">這天還沒有紀錄。打卡、記花費或身體狀態都會自動出現在這裡。</div>`;
+      : `<div class="empty">今天還沒有紀錄。按「＋」記一筆，打卡、花費也會出現在這裡。</div>`;
   }
-  $('dPrev').onclick=()=>{ tlDay=new Date(tlDay.getFullYear(),tlDay.getMonth(),tlDay.getDate()-1); renderTimeline(); };
-  $('dNext').onclick=()=>{ if(dayKey(tlDay)!==dayKey(new Date())){ tlDay=new Date(tlDay.getFullYear(),tlDay.getMonth(),tlDay.getDate()+1); renderTimeline(); } };
+  $('tlAll').onclick=()=>openJournal(dayKey(new Date()));
 
   /* ---------- UI helpers ---------- */
   const layer = $('layer');
@@ -990,8 +989,7 @@ button.sync{font:inherit;border:0;cursor:pointer}
     const nv = e.target.closest('nav [data-view]');
     if(nv){
       document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on', b===nv)); placeNeedle();
-      ['vToday','vTimeline','vJournal','vWorld'].forEach(v=>$(v).hidden = v!==nv.dataset.view);
-      if(nv.dataset.view==='vTimeline'){ tlDay=new Date(); renderTimeline(); }
+      ['vToday','vJournal','vWorld'].forEach(v=>$(v).hidden = v!==nv.dataset.view);
       if(nv.dataset.view==='vJournal') renderSlots();
       window.scrollTo(0,0);
     }
@@ -1086,7 +1084,7 @@ button.sync{font:inherit;border:0;cursor:pointer}
     const g = ex.g || ['','',''];
     const items = S.list.filter(e=>e.kind!=='journal').sort((a,b)=>a.ts-b.ts).map(e=>{ const x=describe(e); return `<div class="it"><time>${hm(e.ts)}</time><i class="dot ${x.c}"></i><div class="tx">${x.t}${x.s?`<small>${x.s}</small>`:''}</div></div>`; }).join('');
     const s = sheet(`<div class="dayhead"><h2 style="margin:0">${pad(d.getMonth()+1)}/${pad(d.getDate())} 週${DOW[d.getDay()]}${isToday?' · 今天':''}</h2><span class="label">SAVE DATA</span></div>
-      <div class="daystats"><div><b>${S.checks}</b><span>打卡</span></div><div><b>${fmt(S.spend)}</b><span>花費</span></div><div><b style="font-size:13px;line-height:19px">${esc(S.mood||'—')}</b><span>心情</span></div><div><b>${S.pts}</b><span>點數</span></div></div>
+      <div class="daystats"><div><b>${S.checks}</b><span>打卡</span></div><div><b>${fmt(S.spend)}</b><span>花費</span></div><div><b style="font-size:13px;line-height:19px">${esc(S.mood||'—')}</b><span>心情</span></div><div><b>${S.pts}</b><span>種子</span></div></div>
       <h3>值得回憶的事</h3><textarea class="field" id="jm" rows="3" maxlength="300" placeholder="${isToday?'今天':'那天'}發生了什麼想記住的事？">${esc(ex.memory||'')}</textarea>
       <h3>感恩的三件事</h3>
       <div class="opts">${[0,1,2].map(i=>`<input class="field" id="jg${i}" maxlength="100" placeholder="${i+1}." value="${esc(g[i]||'')}">`).join('')}</div>
@@ -1113,7 +1111,7 @@ button.sync{font:inherit;border:0;cursor:pointer}
       <div class="presets">${NOTE_PRESETS.map(t=>`<button class="chip" data-p="${t}">${t}</button>`).join('')}</div>
       <input class="field" id="nt" maxlength="120" placeholder="或自己打，例如：去郵局寄包裹">
       <div class="row-end"><button class="key" id="nSave"><span class="face">記下來</span></button></div>`);
-    const save = async t => { s.remove(); await add('note',{text:t}); tlDay=new Date(); renderTimeline(); };
+    const save = async t => { s.remove(); await add('note',{text:t}); render(); };
     s.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>save(b.dataset.p));
     s.querySelector('#nSave').onclick=()=>{ const t=s.querySelector('#nt').value.trim(); if(t) save(t); };
   };
