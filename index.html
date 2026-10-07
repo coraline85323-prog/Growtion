@@ -41,13 +41,13 @@
   --f-tc:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
   --f-mono:"Share Tech Mono",ui-monospace,"SFMono-Regular",monospace;
 }
-html{min-height:calc(100% + env(safe-area-inset-top,0px))} /* iOS home-screen app: without the extra top inset the bottom bar floats up on short pages */
-body{min-height:100%}
+html,body{height:auto}
+/* iOS home-screen app pins the bottom bar too high when the page is shorter than the screen, so every page is at least one screen tall (.app min-height) */
 body{background:var(--void);color:var(--ink);font-family:var(--f-tc);-webkit-tap-highlight-color:transparent}
 *{box-sizing:border-box}
 button{font:inherit;color:inherit;cursor:pointer;border:0;background:none;padding:0}
 button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--orange);outline-offset:2px}
-.app{max-width:440px;margin:0 auto;padding-inline:16px;padding-block:14px 100px;display:flex;flex-direction:column;gap:12px}
+.app{max-width:440px;margin:0 auto;box-sizing:border-box;min-height:calc(100vh + 1px);min-height:calc(100lvh + 1px);padding-inline:16px;padding-block:14px 100px;display:flex;flex-direction:column;gap:12px}
 [hidden]{display:none!important}
 
 .plate{position:relative;border-radius:10px;padding:14px;
