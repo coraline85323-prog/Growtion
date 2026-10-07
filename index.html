@@ -183,13 +183,15 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
 .mono .au{font-family:var(--f-mono);font-size:19px;line-height:1.2;margin-top:2px}
 .gk.done .mono .mn::after{content:" ✓"}
 .gk.pulse .mono{animation:pulse .5s}
-.obtn{width:54px;height:54px;border-radius:50%;border:0;padding:5px;cursor:pointer;flex:none;
-  background:radial-gradient(circle at 50% 35%,#77706a,#2a2723 60%,#121110);box-shadow:0 0 0 2px #0a0908,0 3px 6px rgba(0,0,0,.7)}
+.obtn{width:56px;height:56px;border-radius:50%;border:0;padding:6px;cursor:pointer;flex:none;
+  background:radial-gradient(circle,#0c0b0a 0 66%,#1a1815 70%);
+  box-shadow:0 0 0 2px #77706a,0 0 0 3px #2a2723,0 0 0 4px #9a9288,0 3px 6px 4px rgba(0,0,0,.6)}
 .obtn i{display:grid;place-items:center;width:100%;height:100%;border-radius:50%;font-style:normal;font:600 24px/1 var(--f-ui);color:#3a1600;
-  background:radial-gradient(circle at 45% 38%,#ffb170,#ff7a1a 55%,#c4500c);box-shadow:0 0 0 2px #c9a982,inset 0 -3px 5px rgba(0,0,0,.35),0 0 10px rgba(255,122,26,.45)}
+  background:linear-gradient(170deg,#ff8a34,#f0701c 55%,#e0641a);
+  box-shadow:0 0 0 1.5px #ffb26e,0 0 0 3px #3a2210,inset 0 1px 0 rgba(255,220,180,.35),0 0 9px rgba(255,122,26,.35)}
 .obtn:active{transform:translateY(2px)}
 .obtn:active i{filter:brightness(1.15)}
-.obtn.off i{background:radial-gradient(circle at 45% 38%,#5a4a3c,#3a2c20 60%,#241a12);box-shadow:0 0 0 2px #6a5c4c,inset 0 -3px 5px rgba(0,0,0,.35)}
+.obtn.off i{background:linear-gradient(170deg,#4a3c30,#33281e);box-shadow:0 0 0 1.5px #6a5c4c,0 0 0 3px #1a120c}
 .obtn.off{cursor:default}
 /* today outlook (CRT) */
 .outlook{cursor:pointer}
