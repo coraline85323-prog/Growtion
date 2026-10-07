@@ -340,7 +340,7 @@ button.sync{font:inherit;border:0;cursor:pointer}
       <div class="meters">
         <div class="meter"><div class="vbar" id="mGoals"></div><div><span class="k">達成</span><span class="v" id="vGoals">0/8</span></div></div>
         <div class="meter"><div class="vbar" id="mBudget"></div><div><span class="k">預算</span><span class="v" id="vBudget">100%</span></div></div>
-        <div class="meter"><div class="vbar" id="mPts"></div><div><span class="k">點數</span><span class="v" id="vPts">0</span></div></div>
+        <div class="meter"><div class="vbar" id="mPts"></div><div><span class="k">種子</span><span class="v" id="vPts">0</span></div></div>
       </div>
     </section>
 
@@ -654,7 +654,7 @@ button.sync{font:inherit;border:0;cursor:pointer}
     renderNest(D);
     renderTimeline();
     if(!$('vJournal').hidden) renderSlots();
-    $('worldPts').innerHTML = `獎勵會放在這裡<br>目前累積 ${fmt(D.points)} 點`;
+    $('worldPts').innerHTML = `每 500 顆種子培育出一種花<br>目前有 ${fmt(D.points)} 顆種子，再 ${500 - D.points%500} 顆就能培育下一朵`;
   }
 
   /* today's outlook: three things for today on the CRT; tap one to tick it off */
