@@ -246,6 +246,35 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
 .bill b{font-family:var(--f-mono);font-weight:400;color:var(--orange)}
 .bill .key{width:auto}
 .bill .key .face{padding:7px 12px;font-size:13px}
+.bill{flex-wrap:wrap}
+.bill .ledger-open{flex-basis:100%;display:flex;justify-content:space-between;align-items:center;margin-top:8px;padding:9px 12px;border-radius:8px;background:var(--crt);box-shadow:inset 0 0 0 1px #3c372f;color:var(--phosphor);font-size:14px}
+.bill .ledger-open b{font:15px var(--f-mono);color:var(--phosphor);text-shadow:0 0 6px rgba(142,245,154,.45)}
+/* ledger sheet: balances, card bills, income/expense lines, fixed costs, remaining */
+.lg h3{display:flex;justify-content:space-between;align-items:baseline;margin-top:18px}
+.lg-row{display:grid;grid-template-columns:minmax(0,1fr) 128px;gap:10px;align-items:center;padding:5px 0}
+.lg-row .field,.lg-add .field{font:16px var(--f-mono);text-align:right;padding:8px 10px}
+.lg-line{display:grid;grid-template-columns:52px minmax(0,1fr) auto 28px;gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid #2b2620;font-size:15px}
+.lg-line .dt{font:13px var(--f-mono);color:var(--ink-dim)}
+.lg-line .amt{font:16px var(--f-mono);text-align:right;white-space:nowrap}
+.lg-line .amt.in{color:var(--phosphor)}
+.lg-line .amt.out{color:var(--warn)}
+.lg-line .nm{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lg-line .x{width:28px;height:28px;color:var(--ink-dim);font-size:14px}
+.lg-add{display:grid;gap:8px;margin-top:10px}
+.lg-add .r{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}
+.lg-add input[type=date].field{font:16px var(--f-mono);text-align:left;color-scheme:dark}
+.lg-sign{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.lg-sign button{padding:8px 0;border-radius:6px;font:15px var(--f-mono);color:var(--ink-dim);background:var(--plate-lo);box-shadow:inset 0 0 0 1px #3c372f}
+.lg-sign button.on{color:var(--crt);background:var(--phosphor);font-weight:700}
+.lg-sign button.on.out{background:var(--warn)}
+.lg-month{display:flex;gap:6px;align-items:center;font:13px var(--f-mono)}
+.lg-month button{width:28px;height:28px;color:var(--ink-dim);font-size:15px}
+.lg .empty{font-size:13px;color:var(--ink-dim);padding:6px 0}
+.lg-sum{margin-top:20px;padding:14px;border-radius:10px;background:var(--crt);box-shadow:inset 0 0 0 2px #3c372f;color:var(--phosphor)}
+.lg-sum .big{display:flex;justify-content:space-between;align-items:baseline;font-size:15px}
+.lg-sum .big b{font:26px var(--f-mono);text-shadow:0 0 8px rgba(142,245,154,.5)}
+.lg-sum .big b.neg{color:var(--warn);text-shadow:none}
+.lg-sum small{display:block;margin-top:6px;font:11px var(--f-mono);color:var(--phosphor);opacity:.7;line-height:1.6}
 
 /* timeline */
 .tl{display:flex;flex-direction:column}
@@ -1080,6 +1109,71 @@ button.sync{font:inherit;border:0;cursor:pointer}
     crtTimer = setInterval(()=>{ n++; paint(n); if(n>=text.length) clearInterval(crtTimer); }, 38);
   }
   function billDays(y,m){ const last=new Date(y,m+1,0).getDate(); return [10,20,Math.min(30,last)]; }
+  /* ---------- ledger (收支登記表), opened from the 處理帳務 panel ---------- */
+  const LG_ACC = [{k:'ctbc', n:'中信帳戶'},{k:'fubon', n:'富邦帳戶'}];
+  const LG_DEBT = [{k:'ctbcCard', n:'中信卡費'},{k:'fubonCard', n:'富邦卡費'}];
+  const ledgerCfg = () => { const c = events.find(e=>e.id==='ledger-cfg'); return {acc:{}, debt:{}, fixed:[], ...(c||{})}; };
+  const num = v => { const n = Number(String(v).replace(/[^\d.-]/g,'')); return isFinite(n) ? n : 0; };
+  const money = n => (n<0?'-':'') + fmt(Math.abs(n));
+  function ledgerTotals(month){
+    const c = ledgerCfg(), lines = events.filter(e=>e.kind==='cash' && e.date.slice(0,7)===month);
+    const acc = LG_ACC.reduce((t,a)=>t+num(c.acc[a.k]||0),0), debt = LG_DEBT.reduce((t,a)=>t+num(c.debt[a.k]||0),0);
+    const inc = lines.filter(l=>l.amt>0).reduce((t,l)=>t+l.amt,0), out = lines.filter(l=>l.amt<0).reduce((t,l)=>t-l.amt,0);
+    const fixed = c.fixed.reduce((t,f)=>t+num(f.amt),0);
+    return {acc, debt, inc, out, fixed, left: acc - debt + inc - out - fixed};
+  }
+  async function saveCfg(patch){ const {id:_, ...c} = ledgerCfg(); await api.put('ledger-cfg', {...c, kind:'ledger', ...patch}); }
+  function openLedger(){
+    let month = dayKey(new Date()).slice(0,7), sign = -1;
+    const s = sheet(`<div class="lg" id="lg"></div>`);
+    const draw = () => {
+      const c = ledgerCfg(), T = ledgerTotals(month), [yy,mm] = month.split('-');
+      const lines = events.filter(e=>e.kind==='cash' && e.date.slice(0,7)===month).sort((a,b)=>a.date.localeCompare(b.date)||a.ts-b.ts);
+      const row = (grp, a) => `<label class="lg-row"><span>${a.n}</span><input class="field" inputmode="numeric" data-lg-set="${grp}.${a.k}" value="${c[grp][a.k]!=null&&c[grp][a.k]!==''?fmt(num(c[grp][a.k])):''}" placeholder="0"></label>`;
+      s.querySelector('#lg').innerHTML = `<h2>收支登記表</h2>
+        <h3>現在存款</h3>${LG_ACC.map(a=>row('acc',a)).join('')}
+        <h3>債務</h3>${LG_DEBT.map(a=>row('debt',a)).join('')}
+        <h3><span>收支登記</span><span class="lg-month"><button data-lg-m="-1" aria-label="上個月">‹</button>${yy}/${mm}<button data-lg-m="1" aria-label="下個月">›</button></span></h3>
+        ${lines.length ? lines.map(l=>`<div class="lg-line"><span class="dt">${l.date.slice(5).replace('-','/')}</span><span></span><span class="amt ${l.amt>0?'in':'out'}">${l.amt>0?'+':'-'} ${fmt(Math.abs(l.amt))}</span><button class="x" data-lg-del="${l.id}" aria-label="刪掉這筆">✕</button></div>`).join('') : '<div class="empty">這個月還沒有登記。</div>'}
+        <form class="lg-add" id="lgAdd" autocomplete="off">
+          <div class="lg-sign"><button type="button" data-lg-sign="1" class="${sign>0?'on':''}">+ 收入</button><button type="button" data-lg-sign="-1" class="${sign<0?'on out':''}">- 支出</button></div>
+          <div class="r"><input class="field" type="date" id="lgDate" value="${dayKey(new Date())}" aria-label="日期"><input class="field" id="lgAmt" inputmode="numeric" placeholder="金額" aria-label="金額"></div>
+          <button class="key" type="submit"><span class="face">登錄</span></button>
+        </form>
+        <h3>固定支出</h3>
+        ${c.fixed.length ? c.fixed.map((f,i)=>`<div class="lg-line" style="grid-template-columns:minmax(0,1fr) auto 28px"><span class="nm">${esc(f.name)}</span><span class="amt">${fmt(num(f.amt))}</span><button class="x" data-lg-fx="${i}" aria-label="刪掉${esc(f.name)}">✕</button></div>`).join('') : '<div class="empty">還沒有固定支出。</div>'}
+        <form class="lg-add" id="lgFix" autocomplete="off"><div class="r"><input class="field" id="lgFxName" maxlength="20" placeholder="項目名稱" style="font-family:var(--f-tc);text-align:left" aria-label="項目名稱"><input class="field" id="lgFxAmt" inputmode="numeric" placeholder="金額" aria-label="金額"></div>
+          <button class="btn-metal" type="submit" style="padding:10px">加入固定支出</button></form>
+        <div class="lg-sum"><div class="big"><span>結餘</span><b class="${T.left<0?'neg':''}">${money(T.left)}</b></div>
+          <small>存款 ${fmt(T.acc)} − 債務 ${fmt(T.debt)} + 本月收入 ${fmt(T.inc)} − 本月支出 ${fmt(T.out)} − 固定支出 ${fmt(T.fixed)}</small></div>`;
+      s.querySelectorAll('[data-lg-set]').forEach(inp=>inp.onchange = async () => {
+        const [grp,k] = inp.dataset.lgSet.split('.'), c2 = ledgerCfg();
+        await saveCfg({[grp]: {...c2[grp], [k]: inp.value.trim()==='' ? '' : num(inp.value)}}); draw();
+      });
+      s.querySelector('#lgAdd').onsubmit = async ev => {
+        ev.preventDefault(); const a = num(s.querySelector('#lgAmt').value), d = s.querySelector('#lgDate').value;
+        if(!a || !d) return;
+        await api.put(newId(), {kind:'cash', date:d, amt: sign*Math.abs(a), ts:Date.now()}); month = d.slice(0,7); draw();
+      };
+      s.querySelector('#lgFix').onsubmit = async ev => {
+        ev.preventDefault(); const n = s.querySelector('#lgFxName').value.trim(), a = num(s.querySelector('#lgFxAmt').value);
+        if(!n || !a) return; await saveCfg({fixed: [...ledgerCfg().fixed, {name:n, amt:Math.abs(a)}]}); draw();
+      };
+    };
+    s.querySelector('#lg').addEventListener('click', async ev => {
+      const t = ev.target;
+      const sg = t.closest('[data-lg-sign]'); if(sg){ sign = +sg.dataset.lgSign; draw(); return; }
+      const mb = t.closest('[data-lg-m]'); if(mb){ const [y,m] = month.split('-').map(Number), d = new Date(y, m-1+(+mb.dataset.lgM), 1); month = dayKey(d).slice(0,7); draw(); return; }
+      const dl = t.closest('[data-lg-del]');
+      if(dl){ const l = events.find(e=>e.id===dl.dataset.lgDel); if(!l) return; const {id, ...rest} = l; await api.del(id); draw();
+        toast(`刪掉了 ${l.amt>0?'+':'-'}${fmt(Math.abs(l.amt))}`, async()=>{ await api.put(id, rest); draw(); }); return; }
+      const fx = t.closest('[data-lg-fx]');
+      if(fx){ const all = ledgerCfg().fixed, i = +fx.dataset.lgFx, gone = all[i]; await saveCfg({fixed: all.filter((_,j)=>j!==i)}); draw();
+        toast(`刪掉了「${gone.name}」`, async()=>{ const now = ledgerCfg().fixed; now.splice(i,0,gone); await saveCfg({fixed: now}); draw(); }); }
+    });
+    s.redraw = draw; draw();
+  }
+
   function renderBill(D){
     const n=D.now, y=n.getFullYear(), m=n.getMonth(), d=n.getDate();
     const isDay = billDays(y,m).includes(d);
@@ -1090,6 +1184,9 @@ button.sync{font:inherit;border:0;cursor:pointer}
     $('bill').innerHTML = isDay && !done
       ? `<span>今天要處理帳務</span><button class="key" id="billDone"><span class="face">完成</span></button>`
       : `<span>處理帳務${isDay&&done?' · 今天完成了':''}</span><span class="label">NEXT · <b>${pad(nd.getMonth()+1)}/${pad(nd.getDate())}</b> · 還有 ${diff} 天</span>`;
+    const L = ledgerTotals(D.today.slice(0,7));
+    $('bill').insertAdjacentHTML('beforeend', `<button class="ledger-open" id="ledgerOpen"><span>收支登記表</span><span>結餘 <b>${money(L.left)}</b> ›</span></button>`);
+    $('ledgerOpen').onclick = openLedger;
     const b=$('billDone'); if(b) b.onclick=async()=>{ const id=await add('bill',{pts:20}); toast('帳務處理完成 +20', ()=>api.del(id)); };
   }
 
