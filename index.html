@@ -1003,7 +1003,7 @@ button.sync{font:inherit;border:0;cursor:pointer}
     const e = events.find(x=>x.id===id); if(!e) return;
     const s = sheet(`<div class="dream-view"><img src="${e.img}" alt="">
       <div class="dn-list"><span class="label">進度筆記</span><div id="dnList"></div>
-        <form class="dn-add" id="dnAdd" autocomplete="off"><input class="field" id="dnText" maxlength="120" placeholder="寫一行進度…" aria-label="新增進度筆記"><button class="btn-metal" type="submit">加一行</button></form></div>
+        <form class="dn-add" id="dnAdd" autocomplete="off"><input class="field" id="dnText" maxlength="120" placeholder="寫一行進度…" aria-label="新增進度筆記"><button class="btn-metal" type="submit">登錄</button></form></div>
       <div class="row" style="margin-top:18px"><button class="btn-metal" id="drDel" style="flex:1;padding:10px">從夢想版移除</button></div></div>`);
     const draw = () => {
       const ns = dnotes(id);
