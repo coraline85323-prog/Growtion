@@ -40,6 +40,7 @@
   --dial-red:#e3261c;
   --f-ui:"Chakra Petch","Noto Sans TC",system-ui,sans-serif;
   --f-tc:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+  --f-px:"Cubic 11","Share Tech Mono",ui-monospace,monospace;
   --f-mono:"Share Tech Mono",ui-monospace,"SFMono-Regular",monospace;
 }
 html,body{height:auto}
@@ -137,6 +138,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
 .key:active{transform:translateY(2px);box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 1px 0 #0a0908}
 .key:active .face{filter:brightness(1.12)}
 
+@font-face{font-family:"Cubic 11";src:url(fonts/Cubic_11.woff2) format("woff2");font-display:swap}
 /* CRT */
 .crt{position:relative;border-radius:12px;padding:10px;background:#0b0a09;box-shadow:inset 0 0 0 2px #3c372f,inset 0 0 0 6px #14120f}
 .screen{position:relative;overflow:hidden;border-radius:8px;padding:16px 18px;
@@ -150,9 +152,9 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
 .brk.tr{top:8px;right:8px;border-top:2px solid;border-right:2px solid}
 .brk.bl{bottom:8px;left:8px;border-bottom:2px solid;border-left:2px solid}
 .brk.br{bottom:8px;right:8px;border-bottom:2px solid;border-right:2px solid}
-.screen .big{font-size:24px;font-weight:700;letter-spacing:.12em;text-align:center}
-.screen .sub{font-family:var(--f-mono);font-size:12px;letter-spacing:.18em;text-align:center;opacity:.85;margin-top:4px}
-.lines{font-family:var(--f-mono);font-size:13px;line-height:1.75;position:relative}
+.screen .big{font-family:var(--f-px);font-size:26px;font-weight:400;letter-spacing:.12em;text-align:center}
+.screen .sub{font-family:var(--f-px);font-size:12px;letter-spacing:.18em;text-align:center;opacity:.85;margin-top:4px}
+.lines{font-family:var(--f-px);font-size:14px;line-height:1.8;position:relative}
 .blink{animation:blink 1.1s steps(1) infinite}
 @keyframes blink{50%{opacity:0}}
 
@@ -259,46 +261,60 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
 .bill{flex-wrap:wrap}
 .bill .ledger-open{flex-basis:100%;display:flex;justify-content:space-between;align-items:center;margin-top:8px;padding:9px 12px;border-radius:8px;background:var(--crt);box-shadow:inset 0 0 0 1px #3c372f;color:var(--phosphor);font-size:14px}
 .bill .ledger-open b{font:15px var(--f-mono);color:var(--phosphor);text-shadow:0 0 6px rgba(142,245,154,.45)}
-/* ledger sheet: balances, card bills, income/expense lines, fixed costs, remaining */
-.lg h3{display:flex;justify-content:space-between;align-items:baseline;margin-top:18px}
-.lg-row{display:grid;grid-template-columns:minmax(0,1fr) 128px;gap:10px;align-items:center;padding:5px 0}
-.lg-row .field,.lg-add .field{font:16px var(--f-mono);text-align:right;padding:8px 10px}
-.lg-cols,.lg-line,.lg-in{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1fr) minmax(0,1fr) 40px;gap:8px;align-items:center}
-.lg-cols{font:11px var(--f-ui);letter-spacing:.1em;color:var(--ink-dim);padding:2px 0 4px;border-bottom:1px solid #2b2620}
-.lg-cols span:not(:first-child),.lg-in .field{text-align:right}
-.lg-in{margin-top:10px}
-.lg-in .field{font:16px var(--f-mono);padding:8px 10px;min-width:0}
-.lg-in .dtf{text-align:left}
-.lg-enter.key{width:40px;padding:3px;border-radius:8px}
-.lg-enter.key .face{padding:8px 0;font:700 17px var(--f-ui);letter-spacing:0}
-.lg-x{display:grid;place-items:center}
-.lg-title{text-align:center;margin:2px 0 6px}
+/* ledger: a small bank terminal. Balance on a CRT up top, savings/debts as two meters, the month's entries on a green tape */
+.lg{display:flex;flex-direction:column;gap:14px}
+.lg-title{text-align:center;margin:2px 0 0}
 .lg-title .en{font:600 10px var(--f-ui);letter-spacing:.42em;color:var(--orange);opacity:.85;padding-left:.42em}
 .lg-title h2{margin:4px 0 0;font:700 27px "Noto Serif TC",var(--f-tc);letter-spacing:.28em;padding-left:.28em;color:#efe6d6;text-shadow:0 1px 0 #000,0 0 18px rgba(255,190,120,.18)}
 .lg-title .rule{display:flex;align-items:center;gap:8px;margin:10px auto 0;width:72%}
 .lg-title .rule i{flex:1;height:0;border-top:1px solid #4a443a;border-bottom:1px solid #26221d}
 .lg-title .rule b{width:7px;height:7px;transform:rotate(45deg);background:var(--orange);box-shadow:0 0 6px rgba(255,122,26,.6)}
-.lg-line{gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid #2b2620;font-size:15px}
-.lg-line .dt{font:13px var(--f-mono);color:var(--phosphor);opacity:.85}
-.lg-line .amt{font:16px var(--f-mono);text-align:right;white-space:nowrap;color:var(--phosphor)}
-.lg-line .amt.in{color:var(--phosphor)}
-.lg-line .amt.out{color:var(--phosphor)}
-.lg-line .nm{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.lg-fx{display:grid;grid-template-columns:minmax(0,1fr) 128px 40px;gap:8px;align-items:center;padding:5px 0}
-.lg-fx .field.nmf{font:16px var(--f-tc);text-align:left}
-.lg-fx .field{font:16px var(--f-mono);text-align:right;padding:8px 10px}
-.lg-fx .x,.lg-line .x{justify-self:center;width:28px;height:28px;color:var(--ink-dim);font-size:14px}
-.lg-add{display:grid;gap:8px;margin-top:10px}
-.lg-add .r{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}
-.lg-add input[type=date].field{font:16px var(--f-mono);text-align:left;color-scheme:dark}
-.lg-month{display:flex;gap:6px;align-items:center;font:13px var(--f-mono);color:var(--phosphor)}
-.lg-month button{width:28px;height:28px;color:var(--ink-dim);font-size:15px}
-.lg .empty{font-size:13px;color:var(--ink-dim);padding:6px 0}
-.lg-sum{margin-top:20px;padding:14px;border-radius:10px;background:var(--crt);box-shadow:inset 0 0 0 2px #3c372f;color:var(--phosphor)}
-.lg-sum .big{display:flex;justify-content:space-between;align-items:baseline;font-size:15px}
-.lg-sum .big b{font:26px var(--f-mono);text-shadow:0 0 8px rgba(142,245,154,.5)}
-.lg-sum .big b.neg{color:var(--phosphor)}
-.lg-sum small{display:block;margin-top:6px;font:11px var(--f-mono);color:var(--phosphor);opacity:.7;line-height:1.6}
+.lg .crt{padding:8px}
+.lg-hero .screen{padding:16px 18px 14px;text-align:center}
+.lg-hero .cap{display:flex;justify-content:space-between;font:12px var(--f-px);letter-spacing:.14em;opacity:.8}
+.lg-hero .amt{font:400 44px/1.1 var(--f-px);margin:10px 0 4px;letter-spacing:.02em}
+.lg-hero .amt small{font-size:16px;margin-right:6px;opacity:.75}
+.lg-hero .eq{display:flex;flex-wrap:wrap;justify-content:center;gap:4px 12px;font:12px var(--f-px);opacity:.75;margin-top:8px}
+.lg-hero .eq span{white-space:nowrap}
+.lg-bar{display:flex;height:8px;gap:2px;margin-top:12px}
+.lg-bar i{display:block;height:100%;border-radius:1px}
+.lg-bar .s{background:var(--phosphor);box-shadow:0 0 6px rgba(142,245,154,.5)}
+.lg-bar .d{background:var(--warn)}
+.lg-bar .f{background:#5d574c}
+.lgp{border-radius:12px;padding:12px;background:var(--plate-lo);box-shadow:inset 0 0 0 1px #3c372f,inset 0 2px 6px rgba(0,0,0,.5)}
+.lgp-h{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px}
+.lgp-h .tag{font:600 12px var(--f-ui);letter-spacing:.18em;color:var(--orange)}
+.lgp-h .tag small{margin-left:6px;font:500 11px var(--f-tc);letter-spacing:.06em;color:var(--ink-dim)}
+.lgp-h .tot{font:16px var(--f-px);color:var(--phosphor);text-shadow:0 0 6px rgba(142,245,154,.4)}
+.lg-duo{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
+.lg-duo .lgp{padding:10px}
+.lg-acc{display:grid;gap:2px;margin-top:6px}
+.lg-acc span{font:12px var(--f-tc);color:var(--ink-dim)}
+.lg .field{font:16px var(--f-px);color:var(--phosphor);text-align:right;padding:8px 10px;min-width:0}
+.lg .field.nmf,.lg .field.dtf{text-align:left}
+.lg .field.nmf{font-family:var(--f-tc)}
+.tape{position:relative;border-radius:8px;padding:6px 10px;background:var(--crt);box-shadow:inset 0 0 0 1px #2c3a2e;color:var(--phosphor);text-shadow:0 0 5px rgba(142,245,154,.4)}
+.tape::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(0,0,0,.22) 0 1px,transparent 1px 3px)}
+.lg-cols,.lg-line,.lg-in,.lg-totl{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1fr) minmax(0,1fr) 40px;gap:8px;align-items:center}
+.lg-cols{font:11px var(--f-ui);letter-spacing:.14em;color:var(--phosphor);opacity:.6;padding:4px 0 6px;border-bottom:1px dashed rgba(142,245,154,.3)}
+.lg-cols span:not(:first-child),.lg-in .field{text-align:right}
+.lg-line{padding:6px 0;border-bottom:1px dashed rgba(142,245,154,.14);font:15px var(--f-px)}
+.lg-line .dt{opacity:.75}
+.lg-line .amt{text-align:right;white-space:nowrap}
+.lg-totl{padding:8px 0 4px;font:15px var(--f-px)}
+.lg-totl span:first-child{font:12px var(--f-tc);opacity:.7}
+.lg-totl span{text-align:right}
+.lg-totl span:first-child{text-align:left}
+.lg .x{position:relative;z-index:1;justify-self:center;width:28px;height:28px;color:var(--ink-dim);font-size:14px}
+.tape .x{color:var(--phosphor);opacity:.5;text-shadow:none}
+.lg-in{margin-top:10px}
+.lg-enter.key{width:40px;padding:3px;border-radius:8px}
+.lg-enter.key .face{padding:8px 0;font:700 17px var(--f-ui);letter-spacing:0}
+.lg-month{display:flex;gap:2px;align-items:center;font:14px var(--f-px);color:var(--phosphor)}
+.lg-month button{width:28px;height:28px;color:var(--orange);font:14px var(--f-px)}
+.lg-fx{display:grid;grid-template-columns:minmax(0,1fr) 120px 40px;gap:8px;align-items:center;padding:4px 0}
+.lg-fx .nm{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:15px}
+.lg .empty{font:13px var(--f-tc);opacity:.6;padding:8px 0;text-shadow:none}
 
 /* timeline */
 .tl{display:flex;flex-direction:column}
@@ -371,9 +387,9 @@ nav .needle{position:absolute;z-index:2;top:2px;height:20px;width:2px;margin-lef
 .quad{position:relative;border-radius:10px;padding:10px 10px 8px;background:var(--crt);box-shadow:inset 0 0 0 2px #3c372f,inset 0 0 0 5px #14120f;color:var(--phosphor);min-height:170px;display:flex;flex-direction:column;gap:6px;min-width:0}
 .quad::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(0,0,0,.25) 0 1px,transparent 1px 3px)}
 .quad .qh{display:flex;justify-content:space-between;align-items:baseline;gap:6px;padding:2px 2px 4px;border-bottom:1px solid var(--phosphor-dim);text-align:left;color:inherit;text-shadow:0 0 6px rgba(142,245,154,.45)}
-.quad .qh b{font-size:14px;letter-spacing:.08em}
+.quad .qh b{font:400 15px var(--f-px);letter-spacing:.08em}
 .quad .qh span{font:12px var(--f-mono);opacity:.8;white-space:nowrap}
-.qi{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:4px;align-items:center;font-size:13px;line-height:1.35}
+.qi{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:4px;align-items:center;font:14px/1.4 var(--f-px)}
 .qi .cb{width:20px;height:20px;display:grid;place-items:center;font:13px var(--f-mono);color:var(--phosphor);border:1px solid var(--phosphor-dim);border-radius:3px}
 .qi .tx{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:left;color:var(--phosphor)}
 .qi .age{font:10px var(--f-mono);color:var(--warn);white-space:nowrap}
@@ -381,7 +397,7 @@ nav .needle{position:absolute;z-index:2;top:2px;height:20px;width:2px;margin-lef
 .qi.done .cb{background:var(--phosphor-dim);color:var(--crt)}
 .quad .more{margin-top:auto;font:11px var(--f-mono);letter-spacing:.06em;color:var(--phosphor);opacity:.7;text-align:left;padding:2px}
 .quad .none{font-size:12px;opacity:.45;padding:4px 2px}
-.bm-sheet .qi{font-size:15px;padding:6px 0;border-bottom:1px solid #2b2620;grid-template-columns:26px minmax(0,1fr) auto auto}
+.bm-sheet .qi{font:15px var(--f-tc);padding:6px 0;border-bottom:1px solid #2b2620;grid-template-columns:26px minmax(0,1fr) auto auto}
 .bm-sheet .qi .tx{white-space:normal;color:var(--ink)}
 .bm-sheet .qi .cb{width:22px;height:22px}
 .bm-sheet .del{width:32px;height:32px;color:var(--ink-dim);font-size:16px}
@@ -423,17 +439,17 @@ nav .needle{position:absolute;z-index:2;top:2px;height:20px;width:2px;margin-lef
 @keyframes blinkdot{50%{opacity:0}}
 .tv .ch{background:rgba(0,0,0,.6);font:11px/1 var(--f-mono);padding:4px 7px;border-radius:2px;letter-spacing:.08em;color:var(--ink)}
 .tv .lower{position:absolute;left:0;right:0;bottom:30px;z-index:2;padding:0 10px}
-.tv .kick{display:inline-block;background:var(--orange);color:#1a0e04;font-weight:700;font-size:12px;letter-spacing:.14em;padding:3px 10px}
+.tv .kick{display:inline-block;font-family:var(--f-px);background:var(--orange);color:#1a0e04;font-weight:700;font-size:12px;letter-spacing:.14em;padding:3px 10px}
 .tv .main{background:linear-gradient(90deg,rgba(14,13,11,.94),rgba(14,13,11,.82));border-left:4px solid var(--orange);padding:8px 12px 9px;text-align:left}
-.tv .main b{display:block;font-size:18px;font-weight:700;letter-spacing:.05em;color:#fff}
-.tv .main small{display:block;font:13px var(--f-mono);color:var(--orange-hot);margin-top:3px;letter-spacing:.06em}
+.tv .main b{display:block;font-family:var(--f-px);font-size:18px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:400;letter-spacing:.05em;color:#fff}
+.tv .main small{display:block;font:13px var(--f-px);color:var(--orange-hot);margin-top:3px;letter-spacing:.06em}
 .tv .ticker{position:absolute;left:0;right:0;bottom:0;height:26px;z-index:2;background:#0b0a09;border-top:1px solid #2a2721;display:flex;align-items:center;overflow:hidden}
 .tv .ticker .tag{position:relative;z-index:1;flex:none;height:100%;display:grid;place-items:center;padding:0 8px;background:var(--dial-red);color:#fff;font:700 10px/1 var(--f-ui);letter-spacing:.14em}
-.tv .ticker .run{white-space:nowrap;font-size:12px;color:var(--ink);padding-left:10px;animation:tickrun 24s linear infinite}
+.tv .ticker .run{white-space:nowrap;font:12px var(--f-px);color:var(--ink);padding-left:10px;animation:tickrun 24s linear infinite}
 .tv .ticker .run em{font-style:normal;color:var(--orange-hot);margin:0 14px}
 @keyframes tickrun{to{transform:translateX(-100%)}}
 .tv .empty{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:radial-gradient(ellipse at center,#0e2412,var(--crt) 80%);color:var(--phosphor);text-shadow:0 0 6px rgba(142,245,154,.5);font-family:var(--f-mono);text-align:center;padding:20px}
-.tv .empty b{font:400 22px var(--f-tc);letter-spacing:.12em}
+.tv .empty b{font:400 22px var(--f-px);letter-spacing:.12em}
 .tv .empty span{font-size:12px;letter-spacing:.2em;opacity:.7}
 .need{padding:4px;color:var(--phosphor);text-shadow:0 0 6px rgba(142,245,154,.45);font-size:14px;letter-spacing:.1em}
 .need .big{display:flex;align-items:baseline;gap:8px;margin-top:4px}
@@ -462,7 +478,7 @@ nav .needle{position:absolute;z-index:2;top:2px;height:20px;width:2px;margin-lef
 /* growing animation */
 .grow{position:fixed;inset:0;z-index:40;display:grid;place-items:center;padding:16px;background:rgba(5,5,4,.92)}
 .grow .gbox{width:100%;max-width:400px;display:flex;flex-direction:column;gap:12px}
-.grow .ghead{font:12px var(--f-ui);letter-spacing:.2em;color:var(--orange-hot);text-align:center}
+.grow .ghead{font:13px var(--f-px);letter-spacing:.2em;color:var(--orange-hot);text-align:center}
 .grow .tv .lower{transform:translateX(-110%);transition:transform .5s cubic-bezier(.2,.9,.3,1)}
 .grow .tv.on .lower{transform:none}
 .grow .tv .bug{opacity:0;transition:opacity .3s}
@@ -1172,22 +1188,29 @@ button.sync{font:inherit;border:0;cursor:pointer}
     const draw = () => {
       const c = ledgerCfg(), T = ledgerTotals(month), [yy,mm] = month.split('-');
       const lines = events.filter(e=>e.kind==='cash' && e.date.slice(0,7)===month).sort((a,b)=>a.date.localeCompare(b.date)||a.ts-b.ts);
-      const row = (grp, a) => `<label class="lg-row"><span>${a.n}</span><input class="field" inputmode="numeric" data-lg-set="${grp}.${a.k}" value="${c[grp][a.k]!=null&&c[grp][a.k]!==''?fmt(num(c[grp][a.k])):''}" placeholder="0"></label>`;
+      const acc = (grp, a) => `<label class="lg-acc"><span>${a.n}</span><input class="field" inputmode="numeric" data-lg-set="${grp}.${a.k}" value="${c[grp][a.k]!=null&&c[grp][a.k]!==''?fmt(num(c[grp][a.k])):''}" placeholder="0"></label>`;
+      const pos = T.acc + T.inc, w = Math.max(1, pos, T.debt + T.out + T.fixed), pc = v => (Math.max(0,v)/w*100).toFixed(1)+'%';
       s.querySelector('#lg').innerHTML = `<div class="lg-title"><div class="en">LEDGER</div><h2>收支登記表</h2><div class="rule"><i></i><b></b><i></i></div></div>
-        <h3>現在存款</h3>${LG_ACC.map(a=>row('acc',a)).join('')}
-        <h3>債務</h3>${LG_DEBT.map(a=>row('debt',a)).join('')}
-        <h3><span>收支登記</span><span class="lg-month"><button data-lg-m="-1" aria-label="上個月">‹</button>${yy}/${mm}<button data-lg-m="1" aria-label="下個月">›</button></span></h3>
-        <div class="lg-cols"><span>日期</span><span>收入</span><span>支出</span><span></span></div>
-        ${lines.length ? lines.map(l=>{ const a = `${l.amt>0?'+':'-'} ${fmt(Math.abs(l.amt))}`;
-          return `<div class="lg-line"><span class="dt">${l.date.slice(5).replace('-','/')}</span><span class="amt in">${l.amt>0?a:''}</span><span class="amt out">${l.amt<0?a:''}</span><button class="x" data-lg-del="${l.id}" aria-label="刪掉這筆">✕</button></div>`; }).join('') : '<div class="empty">這個月還沒有登記。</div>'}
-        <form id="lgAdd" autocomplete="off">
-          <div class="lg-in"><input class="field dtf" id="lgDate" inputmode="numeric" value="${defDate()}" placeholder="月/日" aria-label="日期（月/日）"><input class="field" id="lgInc" inputmode="numeric" placeholder="+ 收入" aria-label="收入金額"><input class="field" id="lgExp" inputmode="numeric" placeholder="- 支出" aria-label="支出金額"><button class="key lg-enter" type="submit" aria-label="登錄"><span class="face">⏎</span></button></div>
-        </form>
-        <h3>預計支出</h3>
-        ${c.fixed.length ? c.fixed.map((f,i)=>`<label class="lg-fx"><span class="nm">${esc(f.name)}</span><input class="field" inputmode="numeric" data-lg-fxamt="${i}" value="${fmt(num(f.amt))}" aria-label="${esc(f.name)}金額"><button type="button" class="x" data-lg-fx="${i}" aria-label="刪掉${esc(f.name)}">✕</button></label>`).join('') : '<div class="empty">還沒有預計支出。</div>'}
-        <form class="lg-fx" id="lgFix" autocomplete="off" style="margin-top:6px"><input class="field nmf" id="lgFxName" maxlength="20" placeholder="項目名稱" aria-label="項目名稱"><input class="field" id="lgFxAmt" inputmode="numeric" placeholder="金額" aria-label="金額"><button class="key lg-enter" type="submit" aria-label="登錄預計支出"><span class="face">⏎</span></button></form>
-        <div class="lg-sum"><div class="big"><span>結餘</span><b class="${T.left<0?'neg':''}">${money(T.left)}</b></div>
-          <small>存款 ${fmt(T.acc)} − 債務 ${fmt(T.debt)} + 本月收入 ${fmt(T.inc)} − 本月支出 ${fmt(T.out)} − 預計支出 ${fmt(T.fixed)}</small></div>`;
+        <section class="crt lg-hero"><div class="screen"><i class="brk tl"></i><i class="brk tr"></i><i class="brk bl"></i><i class="brk br"></i>
+          <div class="cap"><span>&gt; 結餘</span><span>${yy}/${mm}</span></div>
+          <div class="amt"><small>NT$</small>${money(T.left)}</div>
+          <div class="lg-bar" aria-hidden="true"><i class="s" style="width:${pc(T.left)}"></i><i class="d" style="width:${pc(T.debt + T.out)}"></i><i class="f" style="width:${pc(T.fixed)}"></i></div>
+          <div class="eq"><span>存款 ${fmt(T.acc)}</span><span>− 債務 ${fmt(T.debt)}</span><span>+ 收入 ${fmt(T.inc)}</span><span>− 支出 ${fmt(T.out)}</span><span>− 預計 ${fmt(T.fixed)}</span></div></div></section>
+        <div class="lg-duo">
+          <section class="lgp"><div class="lgp-h"><span class="tag">存款</span><span class="tot">${fmt(T.acc)}</span></div>${LG_ACC.map(a=>acc('acc',a)).join('')}</section>
+          <section class="lgp"><div class="lgp-h"><span class="tag">債務</span><span class="tot">${fmt(T.debt)}</span></div>${LG_DEBT.map(a=>acc('debt',a)).join('')}</section>
+        </div>
+        <section class="lgp"><div class="lgp-h"><span class="tag">收支登記</span><span class="lg-month"><button data-lg-m="-1" aria-label="上個月">◀</button>${yy}/${mm}<button data-lg-m="1" aria-label="下個月">▶</button></span></div>
+          <div class="tape"><div class="lg-cols"><span>日期</span><span>收入</span><span>支出</span><span></span></div>
+          ${lines.length ? lines.map(l=>{ const a = `${l.amt>0?'+':'-'}${fmt(Math.abs(l.amt))}`;
+            return `<div class="lg-line"><span class="dt">${l.date.slice(5).replace('-','/')}</span><span class="amt">${l.amt>0?a:''}</span><span class="amt">${l.amt<0?a:''}</span><button class="x" data-lg-del="${l.id}" aria-label="刪掉這筆">✕</button></div>`; }).join('') : '<div class="empty">這個月還沒有登記。</div>'}
+          <div class="lg-totl"><span>本月合計</span><span>+${fmt(T.inc)}</span><span>-${fmt(T.out)}</span><span></span></div></div>
+          <form id="lgAdd" autocomplete="off"><div class="lg-in"><input class="field dtf" id="lgDate" inputmode="numeric" value="${defDate()}" placeholder="月/日" aria-label="日期（月/日）"><input class="field" id="lgInc" inputmode="numeric" placeholder="+收入" aria-label="收入金額"><input class="field" id="lgExp" inputmode="numeric" placeholder="-支出" aria-label="支出金額"><button class="key lg-enter" type="submit" aria-label="登錄"><span class="face">⏎</span></button></div></form>
+        </section>
+        <section class="lgp"><div class="lgp-h"><span class="tag">預計支出</span><span class="tot">${fmt(T.fixed)}</span></div>
+          ${c.fixed.length ? c.fixed.map((f,i)=>`<label class="lg-fx"><span class="nm">${esc(f.name)}</span><input class="field" inputmode="numeric" data-lg-fxamt="${i}" value="${fmt(num(f.amt))}" aria-label="${esc(f.name)}金額"><button type="button" class="x" data-lg-fx="${i}" aria-label="刪掉${esc(f.name)}">✕</button></label>`).join('') : '<div class="empty">還沒有預計支出。</div>'}
+          <form class="lg-fx" id="lgFix" autocomplete="off" style="margin-top:6px"><input class="field nmf" id="lgFxName" maxlength="20" placeholder="項目名稱" aria-label="項目名稱"><input class="field" id="lgFxAmt" inputmode="numeric" placeholder="金額" aria-label="金額"><button class="key lg-enter" type="submit" aria-label="登錄預計支出"><span class="face">⏎</span></button></form>
+        </section>`;
       s.querySelectorAll('[data-lg-set]').forEach(inp=>inp.onchange = async () => {
         const [grp,k] = inp.dataset.lgSet.split('.'), c2 = ledgerCfg();
         await saveCfg({[grp]: {...c2[grp], [k]: inp.value.trim()==='' ? '' : num(inp.value)}}); draw();
