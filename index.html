@@ -262,7 +262,15 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
 .lg h3{display:flex;justify-content:space-between;align-items:baseline;margin-top:18px}
 .lg-row{display:grid;grid-template-columns:minmax(0,1fr) 128px;gap:10px;align-items:center;padding:5px 0}
 .lg-row .field,.lg-add .field{font:16px var(--f-mono);text-align:right;padding:8px 10px}
-.lg-line{display:grid;grid-template-columns:52px minmax(0,1fr) auto 28px;gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid #2b2620;font-size:15px}
+.lg-cols,.lg-line,.lg-in{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1fr) minmax(0,1fr) 28px;gap:8px;align-items:center}
+.lg-cols{font:11px var(--f-ui);letter-spacing:.1em;color:var(--ink-dim);padding:2px 0 4px;border-bottom:1px solid #2b2620}
+.lg-cols span:not(:first-child),.lg-in .field{text-align:right}
+.lg-in{margin-top:10px}
+.lg-in .field{font:16px var(--f-mono);padding:8px 10px;min-width:0}
+.lg-in .dtf{text-align:left}
+.lg-go{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,2fr) 28px;gap:8px;margin-top:8px}
+.lg-go .key{grid-column:2}
+.lg-line{gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid #2b2620;font-size:15px}
 .lg-line .dt{font:13px var(--f-mono);color:var(--phosphor);opacity:.85}
 .lg-line .amt{font:16px var(--f-mono);text-align:right;white-space:nowrap;color:var(--phosphor)}
 .lg-line .amt.in{color:var(--phosphor)}
@@ -274,10 +282,6 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
 .lg-add{display:grid;gap:8px;margin-top:10px}
 .lg-add .r{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}
 .lg-add input[type=date].field{font:16px var(--f-mono);text-align:left;color-scheme:dark}
-.lg-sign{display:grid;grid-template-columns:1fr 1fr;gap:6px}
-.lg-sign button{padding:8px 0;border-radius:6px;font:15px var(--f-mono);color:var(--ink-dim);background:var(--plate-lo);box-shadow:inset 0 0 0 1px #3c372f}
-.lg-sign button.on{color:var(--crt);background:var(--phosphor);font-weight:700}
-.lg-sign button.on.out{background:var(--warn)}
 .lg-month{display:flex;gap:6px;align-items:center;font:13px var(--f-mono);color:var(--phosphor)}
 .lg-month button{width:28px;height:28px;color:var(--ink-dim);font-size:15px}
 .lg .empty{font-size:13px;color:var(--ink-dim);padding:6px 0}
@@ -1144,7 +1148,17 @@ button.sync{font:inherit;border:0;cursor:pointer}
   }
   async function saveCfg(patch){ const {id:_, ...c} = ledgerCfg(); await api.put('ledger-cfg', {...c, kind:'ledger', ...patch}); }
   function openLedger(){
-    let month = dayKey(new Date()).slice(0,7), sign = -1;
+    let month = dayKey(new Date()).slice(0,7);
+    // the date box takes 月/日 ("10/9", "1009" or just "9" for this month); the year comes from the month on screen
+    const defDate = () => { const t = new Date(); return month===dayKey(t).slice(0,7) ? `${t.getMonth()+1}/${t.getDate()}` : `${+month.slice(5)}/1`; };
+    const parseMD = v => {
+      const y = +month.slice(0,4), p = String(v).trim().split(/[^\d]+/).filter(Boolean);
+      let m, d;
+      if(p.length>=2){ m = +p[0]; d = +p[1]; }
+      else if(p.length===1){ const x = p[0]; if(x.length<=2){ m = +month.slice(5); d = +x; } else { m = +x.slice(0,x.length-2); d = +x.slice(-2); } }
+      if(!m || !d || m>12 || d>31) return null;
+      const dt = new Date(y, m-1, d); return dt.getMonth()===m-1 ? dayKey(dt) : null;
+    };
     const s = sheet(`<div class="lg" id="lg"></div>`);
     const draw = () => {
       const c = ledgerCfg(), T = ledgerTotals(month), [yy,mm] = month.split('-');
@@ -1154,11 +1168,12 @@ button.sync{font:inherit;border:0;cursor:pointer}
         <h3>現在存款</h3>${LG_ACC.map(a=>row('acc',a)).join('')}
         <h3>債務</h3>${LG_DEBT.map(a=>row('debt',a)).join('')}
         <h3><span>收支登記</span><span class="lg-month"><button data-lg-m="-1" aria-label="上個月">‹</button>${yy}/${mm}<button data-lg-m="1" aria-label="下個月">›</button></span></h3>
-        ${lines.length ? lines.map(l=>`<div class="lg-line"><span class="dt">${l.date.slice(5).replace('-','/')}</span><span></span><span class="amt ${l.amt>0?'in':'out'}">${l.amt>0?'+':'-'} ${fmt(Math.abs(l.amt))}</span><button class="x" data-lg-del="${l.id}" aria-label="刪掉這筆">✕</button></div>`).join('') : '<div class="empty">這個月還沒有登記。</div>'}
-        <form class="lg-add" id="lgAdd" autocomplete="off">
-          <div class="lg-sign"><button type="button" data-lg-sign="1" class="${sign>0?'on':''}">+ 收入</button><button type="button" data-lg-sign="-1" class="${sign<0?'on out':''}">- 支出</button></div>
-          <div class="r"><input class="field" type="date" id="lgDate" value="${dayKey(new Date())}" aria-label="日期"><input class="field" id="lgAmt" inputmode="numeric" placeholder="金額" aria-label="金額"></div>
-          <button class="key" type="submit"><span class="face">登錄</span></button>
+        <div class="lg-cols"><span>日期</span><span>收入</span><span>支出</span><span></span></div>
+        ${lines.length ? lines.map(l=>{ const a = `${l.amt>0?'+':'-'} ${fmt(Math.abs(l.amt))}`;
+          return `<div class="lg-line"><span class="dt">${l.date.slice(5).replace('-','/')}</span><span class="amt in">${l.amt>0?a:''}</span><span class="amt out">${l.amt<0?a:''}</span><button class="x" data-lg-del="${l.id}" aria-label="刪掉這筆">✕</button></div>`; }).join('') : '<div class="empty">這個月還沒有登記。</div>'}
+        <form id="lgAdd" autocomplete="off">
+          <div class="lg-in"><input class="field dtf" id="lgDate" inputmode="numeric" value="${defDate()}" placeholder="月/日" aria-label="日期（月/日）"><input class="field" id="lgInc" inputmode="numeric" placeholder="+ 收入" aria-label="收入金額"><input class="field" id="lgExp" inputmode="numeric" placeholder="- 支出" aria-label="支出金額"><span></span></div>
+          <div class="lg-go"><span></span><button class="key" type="submit"><span class="face">登錄</span></button><span></span></div>
         </form>
         <h3>預計支出</h3>
         ${c.fixed.length ? c.fixed.map((f,i)=>`<label class="lg-fx"><span class="nm">${esc(f.name)}</span><input class="field" inputmode="numeric" data-lg-fxamt="${i}" value="${fmt(num(f.amt))}" aria-label="${esc(f.name)}金額"><button type="button" class="x" data-lg-fx="${i}" aria-label="刪掉${esc(f.name)}">✕</button></label>`).join('') : '<div class="empty">還沒有預計支出。</div>'}
@@ -1175,9 +1190,13 @@ button.sync{font:inherit;border:0;cursor:pointer}
         all[i].amt = Math.abs(num(inp.value)); await saveCfg({fixed: all}); draw();
       });
       s.querySelector('#lgAdd').onsubmit = async ev => {
-        ev.preventDefault(); const a = num(s.querySelector('#lgAmt').value), d = s.querySelector('#lgDate').value;
-        if(!a || !d) return;
-        await api.put(newId(), {kind:'cash', date:d, amt: sign*Math.abs(a), ts:Date.now()}); month = d.slice(0,7); draw();
+        ev.preventDefault();
+        const inc = Math.abs(num(s.querySelector('#lgInc').value)), out = Math.abs(num(s.querySelector('#lgExp').value)), d = parseMD(s.querySelector('#lgDate').value);
+        if(!d){ toast('日期看不懂，請寫成 10/9'); return; }
+        if(!inc && !out) return;
+        if(inc) await api.put(newId(), {kind:'cash', date:d, amt: inc, ts:Date.now()});
+        if(out) await api.put(newId(), {kind:'cash', date:d, amt: -out, ts:Date.now()+1});
+        month = d.slice(0,7); draw();
       };
       s.querySelector('#lgFix').onsubmit = async ev => {
         ev.preventDefault(); const n = s.querySelector('#lgFxName').value.trim(), a = num(s.querySelector('#lgFxAmt').value);
@@ -1186,7 +1205,6 @@ button.sync{font:inherit;border:0;cursor:pointer}
     };
     s.querySelector('#lg').addEventListener('click', async ev => {
       const t = ev.target;
-      const sg = t.closest('[data-lg-sign]'); if(sg){ sign = +sg.dataset.lgSign; draw(); return; }
       const mb = t.closest('[data-lg-m]'); if(mb){ const [y,m] = month.split('-').map(Number), d = new Date(y, m-1+(+mb.dataset.lgM), 1); month = dayKey(d).slice(0,7); draw(); return; }
       const dl = t.closest('[data-lg-del]');
       if(dl){ const l = events.find(e=>e.id===dl.dataset.lgDel); if(!l) return; const {id, ...rest} = l; await api.del(id); draw();
