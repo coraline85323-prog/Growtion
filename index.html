@@ -744,7 +744,8 @@ button.sync{font:inherit;border:0;cursor:pointer}
   function derive(){
     const now = new Date(), wk = weekKey(now), today = dayKey(now);
     const thisWeek = events.filter(e=>e.week===wk);
-    const spent = thisWeek.filter(e=>e.kind==='spend').reduce((s,e)=>s+(+e.amt||0),0);
+    const spent = thisWeek.filter(e=>e.kind==='spend').reduce((s,e)=>s+(+e.amt||0),0)
+      + events.filter(e=>e.kind==='cash' && e.amt<0 && weekKey(new Date(e.date+'T12:00'))===wk).reduce((s,e)=>s-e.amt,0);
     const counts = {}; GOALS.forEach(g=>counts[g.id]=0);
     thisWeek.filter(e=>e.kind==='check').forEach(e=>{ if(e.goal in counts) counts[e.goal]++; });
     const points = events.reduce((s,e)=>s+(+e.pts||0),0);
@@ -1149,12 +1150,15 @@ button.sync{font:inherit;border:0;cursor:pointer}
   const num = v => { const n = Number(String(v).replace(/[^\d.-]/g,'')); return isFinite(n) ? n : 0; };
   const money = n => (n<0?'-':'') + fmt(Math.abs(n));
   function ledgerTotals(month){
-    const c = ledgerCfg(), lines = events.filter(e=>e.kind==='cash' && e.date.slice(0,7)===month);
+    const c = ledgerCfg(), lines = ledgerLines(month);
     const acc = LG_ACC.reduce((t,a)=>t+num(c.acc[a.k]||0),0), debt = LG_DEBT.reduce((t,a)=>t+num(c.debt[a.k]||0),0);
     const inc = lines.filter(l=>l.amt>0).reduce((t,l)=>t+l.amt,0), out = lines.filter(l=>l.amt<0).reduce((t,l)=>t-l.amt,0);
     const fixed = c.fixed.reduce((t,f)=>t+num(f.amt),0);
     return {acc, debt, inc, out, fixed, left: acc - debt + inc - out - fixed};
   }
+  // one list for both screens: ledger income + ledger/console spending; spends carry a positive amt, so flip them here
+  const ledgerLines = month => events.filter(e=>(e.kind==='cash' && e.date.slice(0,7)===month) || (e.kind==='spend' && e.day && e.day.slice(0,7)===month))
+    .map(e=>e.kind==='spend' ? {id:e.id, date:e.day, amt:-(+e.amt||0), ts:e.ts, cat:e.cat} : e);
   async function saveCfg(patch){ const {id:_, ...c} = ledgerCfg(); await api.put('ledger-cfg', {...c, kind:'ledger', ...patch}); }
   function openLedger(){
     let month = dayKey(new Date()).slice(0,7);
@@ -1171,7 +1175,7 @@ button.sync{font:inherit;border:0;cursor:pointer}
     const s = sheet(`<div class="lg" id="lg"></div>`);
     const draw = () => {
       const c = ledgerCfg(), T = ledgerTotals(month), [yy,mm] = month.split('-');
-      const lines = events.filter(e=>e.kind==='cash' && e.date.slice(0,7)===month).sort((a,b)=>a.date.localeCompare(b.date)||a.ts-b.ts);
+      const lines = ledgerLines(month).sort((a,b)=>a.date.localeCompare(b.date)||a.ts-b.ts);
       const row = (grp, a) => `<label class="lg-row"><span>${a.n}</span><input class="field" inputmode="numeric" data-lg-set="${grp}.${a.k}" value="${c[grp][a.k]!=null&&c[grp][a.k]!==''?fmt(num(c[grp][a.k])):''}" placeholder="0"></label>`;
       s.querySelector('#lg').innerHTML = `<div class="lg-title"><div class="en">LEDGER</div><h2>收支登記表</h2><div class="rule"><i></i><b></b><i></i></div></div>
         <h3>現在存款</h3>${LG_ACC.map(a=>row('acc',a)).join('')}
@@ -1202,7 +1206,8 @@ button.sync{font:inherit;border:0;cursor:pointer}
         if(!d){ toast('日期看不懂，請寫成 10/9'); return; }
         if(!inc && !out) return;
         if(inc) await api.put(newId(), {kind:'cash', date:d, amt: inc, ts:Date.now()});
-        if(out) await api.put(newId(), {kind:'cash', date:d, amt: -out, ts:Date.now()+1});
+        if(out){ const dt = new Date(d+'T12:00'), now = new Date(), ts = d===dayKey(now) ? Date.now()+1 : new Date(dt.getFullYear(), dt.getMonth(), dt.getDate(), 12).getTime();
+          await api.put(newId(), {kind:'spend', amt: out, cat:'', ts, day:d, week:weekKey(dt)}); }
         month = d.slice(0,7); draw();
       };
       s.querySelector('#lgFix').onsubmit = async ev => {
@@ -1215,7 +1220,7 @@ button.sync{font:inherit;border:0;cursor:pointer}
       const mb = t.closest('[data-lg-m]'); if(mb){ const [y,m] = month.split('-').map(Number), d = new Date(y, m-1+(+mb.dataset.lgM), 1); month = dayKey(d).slice(0,7); draw(); return; }
       const dl = t.closest('[data-lg-del]');
       if(dl){ const l = events.find(e=>e.id===dl.dataset.lgDel); if(!l) return; const {id, ...rest} = l; await api.del(id); draw();
-        toast(`刪掉了 ${l.amt>0?'+':'-'}${fmt(Math.abs(l.amt))}`, async()=>{ await api.put(id, rest); draw(); }); return; }
+        toast(`刪掉了 ${l.kind==='spend'||l.amt<0?'-':'+'}${fmt(Math.abs(l.amt))}`, async()=>{ await api.put(id, rest); draw(); }); return; }
       const fx = t.closest('[data-lg-fx]');
       if(fx){ const all = ledgerCfg().fixed, i = +fx.dataset.lgFx, gone = all[i]; await saveCfg({fixed: all.filter((_,j)=>j!==i)}); draw();
         toast(`刪掉了「${gone.name}」`, async()=>{ const now = ledgerCfg().fixed; now.splice(i,0,gone); await saveCfg({fixed: now}); draw(); }); }
