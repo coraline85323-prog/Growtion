@@ -18,6 +18,7 @@
 <script>if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600&family=Noto+Sans+TC:wght@400;500;700&family=Share+Tech+Mono&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@700&text=%E6%94%B6%E6%94%AF%E7%99%BB%E8%A8%98%E8%A1%A8&display=swap">
 <style>
 /* Layout: left-gauge console (ref layout 2) — fuel gauge + meters + orange key on top, CRT status, goal keys grid, quick log, fixed nav */
 :root{
@@ -262,23 +263,31 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
 .lg h3{display:flex;justify-content:space-between;align-items:baseline;margin-top:18px}
 .lg-row{display:grid;grid-template-columns:minmax(0,1fr) 128px;gap:10px;align-items:center;padding:5px 0}
 .lg-row .field,.lg-add .field{font:16px var(--f-mono);text-align:right;padding:8px 10px}
-.lg-cols,.lg-line,.lg-in{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1fr) minmax(0,1fr) 28px;gap:8px;align-items:center}
+.lg-cols,.lg-line,.lg-in{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1fr) minmax(0,1fr) 40px;gap:8px;align-items:center}
 .lg-cols{font:11px var(--f-ui);letter-spacing:.1em;color:var(--ink-dim);padding:2px 0 4px;border-bottom:1px solid #2b2620}
 .lg-cols span:not(:first-child),.lg-in .field{text-align:right}
 .lg-in{margin-top:10px}
 .lg-in .field{font:16px var(--f-mono);padding:8px 10px;min-width:0}
 .lg-in .dtf{text-align:left}
-.lg-go{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,2fr) 28px;gap:8px;margin-top:8px}
-.lg-go .key{grid-column:2}
+.lg-enter.key{width:40px;padding:3px;border-radius:8px}
+.lg-enter.key .face{padding:8px 0;font:700 17px var(--f-ui);letter-spacing:0}
+.lg-x{display:grid;place-items:center}
+.lg-title{text-align:center;margin:2px 0 6px}
+.lg-title .en{font:600 10px var(--f-ui);letter-spacing:.42em;color:var(--orange);opacity:.85;padding-left:.42em}
+.lg-title h2{margin:4px 0 0;font:700 27px "Noto Serif TC",var(--f-tc);letter-spacing:.28em;padding-left:.28em;color:#efe6d6;text-shadow:0 1px 0 #000,0 0 18px rgba(255,190,120,.18)}
+.lg-title .rule{display:flex;align-items:center;gap:8px;margin:10px auto 0;width:72%}
+.lg-title .rule i{flex:1;height:0;border-top:1px solid #4a443a;border-bottom:1px solid #26221d}
+.lg-title .rule b{width:7px;height:7px;transform:rotate(45deg);background:var(--orange);box-shadow:0 0 6px rgba(255,122,26,.6)}
 .lg-line{gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid #2b2620;font-size:15px}
 .lg-line .dt{font:13px var(--f-mono);color:var(--phosphor);opacity:.85}
 .lg-line .amt{font:16px var(--f-mono);text-align:right;white-space:nowrap;color:var(--phosphor)}
 .lg-line .amt.in{color:var(--phosphor)}
 .lg-line .amt.out{color:var(--phosphor)}
 .lg-line .nm{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.lg-fx{display:grid;grid-template-columns:minmax(0,1fr) 128px 28px;gap:8px;align-items:center;padding:5px 0}
+.lg-fx{display:grid;grid-template-columns:minmax(0,1fr) 128px 40px;gap:8px;align-items:center;padding:5px 0}
+.lg-fx .field.nmf{font:16px var(--f-tc);text-align:left}
 .lg-fx .field{font:16px var(--f-mono);text-align:right;padding:8px 10px}
-.lg-fx .x,.lg-line .x{width:28px;height:28px;color:var(--ink-dim);font-size:14px}
+.lg-fx .x,.lg-line .x{justify-self:center;width:28px;height:28px;color:var(--ink-dim);font-size:14px}
 .lg-add{display:grid;gap:8px;margin-top:10px}
 .lg-add .r{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}
 .lg-add input[type=date].field{font:16px var(--f-mono);text-align:left;color-scheme:dark}
@@ -1164,7 +1173,7 @@ button.sync{font:inherit;border:0;cursor:pointer}
       const c = ledgerCfg(), T = ledgerTotals(month), [yy,mm] = month.split('-');
       const lines = events.filter(e=>e.kind==='cash' && e.date.slice(0,7)===month).sort((a,b)=>a.date.localeCompare(b.date)||a.ts-b.ts);
       const row = (grp, a) => `<label class="lg-row"><span>${a.n}</span><input class="field" inputmode="numeric" data-lg-set="${grp}.${a.k}" value="${c[grp][a.k]!=null&&c[grp][a.k]!==''?fmt(num(c[grp][a.k])):''}" placeholder="0"></label>`;
-      s.querySelector('#lg').innerHTML = `<h2>收支登記表</h2>
+      s.querySelector('#lg').innerHTML = `<div class="lg-title"><div class="en">LEDGER</div><h2>收支登記表</h2><div class="rule"><i></i><b></b><i></i></div></div>
         <h3>現在存款</h3>${LG_ACC.map(a=>row('acc',a)).join('')}
         <h3>債務</h3>${LG_DEBT.map(a=>row('debt',a)).join('')}
         <h3><span>收支登記</span><span class="lg-month"><button data-lg-m="-1" aria-label="上個月">‹</button>${yy}/${mm}<button data-lg-m="1" aria-label="下個月">›</button></span></h3>
@@ -1172,13 +1181,11 @@ button.sync{font:inherit;border:0;cursor:pointer}
         ${lines.length ? lines.map(l=>{ const a = `${l.amt>0?'+':'-'} ${fmt(Math.abs(l.amt))}`;
           return `<div class="lg-line"><span class="dt">${l.date.slice(5).replace('-','/')}</span><span class="amt in">${l.amt>0?a:''}</span><span class="amt out">${l.amt<0?a:''}</span><button class="x" data-lg-del="${l.id}" aria-label="刪掉這筆">✕</button></div>`; }).join('') : '<div class="empty">這個月還沒有登記。</div>'}
         <form id="lgAdd" autocomplete="off">
-          <div class="lg-in"><input class="field dtf" id="lgDate" inputmode="numeric" value="${defDate()}" placeholder="月/日" aria-label="日期（月/日）"><input class="field" id="lgInc" inputmode="numeric" placeholder="+ 收入" aria-label="收入金額"><input class="field" id="lgExp" inputmode="numeric" placeholder="- 支出" aria-label="支出金額"><span></span></div>
-          <div class="lg-go"><span></span><button class="key" type="submit"><span class="face">登錄</span></button><span></span></div>
+          <div class="lg-in"><input class="field dtf" id="lgDate" inputmode="numeric" value="${defDate()}" placeholder="月/日" aria-label="日期（月/日）"><input class="field" id="lgInc" inputmode="numeric" placeholder="+ 收入" aria-label="收入金額"><input class="field" id="lgExp" inputmode="numeric" placeholder="- 支出" aria-label="支出金額"><button class="key lg-enter" type="submit" aria-label="登錄"><span class="face">⏎</span></button></div>
         </form>
         <h3>預計支出</h3>
         ${c.fixed.length ? c.fixed.map((f,i)=>`<label class="lg-fx"><span class="nm">${esc(f.name)}</span><input class="field" inputmode="numeric" data-lg-fxamt="${i}" value="${fmt(num(f.amt))}" aria-label="${esc(f.name)}金額"><button type="button" class="x" data-lg-fx="${i}" aria-label="刪掉${esc(f.name)}">✕</button></label>`).join('') : '<div class="empty">還沒有預計支出。</div>'}
-        <form class="lg-add" id="lgFix" autocomplete="off"><div class="r"><input class="field" id="lgFxName" maxlength="20" placeholder="項目名稱" style="font-family:var(--f-tc);text-align:left" aria-label="項目名稱"><input class="field" id="lgFxAmt" inputmode="numeric" placeholder="金額" aria-label="金額"></div>
-          <button class="btn-metal" type="submit" style="padding:10px">加入預計支出</button></form>
+        <form class="lg-fx" id="lgFix" autocomplete="off" style="margin-top:6px"><input class="field nmf" id="lgFxName" maxlength="20" placeholder="項目名稱" aria-label="項目名稱"><input class="field" id="lgFxAmt" inputmode="numeric" placeholder="金額" aria-label="金額"><button class="key lg-enter" type="submit" aria-label="登錄預計支出"><span class="face">⏎</span></button></form>
         <div class="lg-sum"><div class="big"><span>結餘</span><b class="${T.left<0?'neg':''}">${money(T.left)}</b></div>
           <small>存款 ${fmt(T.acc)} − 債務 ${fmt(T.debt)} + 本月收入 ${fmt(T.inc)} − 本月支出 ${fmt(T.out)} − 預計支出 ${fmt(T.fixed)}</small></div>`;
       s.querySelectorAll('[data-lg-set]').forEach(inp=>inp.onchange = async () => {
