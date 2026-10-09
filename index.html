@@ -1439,7 +1439,7 @@ button.sync{font:inherit;border:0;cursor:pointer}
     for(let d=new Date(today.getFullYear(),today.getMonth(),today.getDate()); d>=start && n<90; d.setDate(d.getDate()-1), n++){
       const k = dayKey(d), S = daySummary(k), idx = Math.round((parseDay(k)-start)/864e5)+1;
       const blank = !S.list.length && !S.j, isNow = k===tk;
-      const title = S.j && S.j.memory ? esc(S.j.memory) : S.j ? '（寫了感恩）' : blank ? (isNow?'今天還沒有存檔，點這裡開始' : '空白的一天，點進來可以補記') : '（還沒寫回憶）';
+      const title = S.j && S.j.memory ? esc(S.j.memory) : S.j ? '（寫了感恩）' : blank ? (isNow?'今天還沒有存檔，點這裡開始' : '空白的一天，點進來可以補記') : isNow ? '（今天還沒結束）' : '（還沒寫回憶）';
       out.push(`<button class="slot-card ${isNow?'now':''} ${blank&&!isNow?'blank':''}" data-day="${k}">
         <span class="thumb"><b>${pad(d.getMonth()+1)}/${pad(d.getDate())}</b><span>週${DOW[d.getDay()]}</span></span>
         <span><span class="sl-top"><span>SAVE ${String(idx).padStart(3,'0')}</span>${isNow?'<em>NOW</em>':''}</span>
