@@ -1,5 +1,5 @@
 // Network-first for the app shell so updates show up right away; cached copy when offline.
-const CACHE = 'growtion-v24';
+const CACHE = 'growtion-v25';
 const SHELL = ['./', 'index.html', 'config.js', 'flowers.js', 'manifest.webmanifest', 'growtion-icon-180.png'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL))); self.skipWaiting(); });
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k))))); self.clients.claim(); });

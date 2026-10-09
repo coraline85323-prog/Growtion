@@ -1110,7 +1110,7 @@ button.sync{font:inherit;border:0;cursor:pointer}
   }
   function billDays(y,m){ const last=new Date(y,m+1,0).getDate(); return [10,20,Math.min(30,last)]; }
   /* ---------- ledger (收支登記表), opened from the 處理帳務 panel ---------- */
-  const LG_ACC = [{k:'ctbc', n:'中信帳戶'},{k:'fubon', n:'富邦帳戶'}];
+  const LG_ACC = [{k:'ctbc', n:'中信帳戶'},{k:'fubon', n:'富邦帳戶'},{k:'cash', n:'現金'}];
   const LG_DEBT = [{k:'ctbcCard', n:'中信卡費'},{k:'fubonCard', n:'富邦卡費'}];
   const ledgerCfg = () => { const c = events.find(e=>e.id==='ledger-cfg'); return {acc:{}, debt:{}, fixed:[], ...(c||{})}; };
   const num = v => { const n = Number(String(v).replace(/[^\d.-]/g,'')); return isFinite(n) ? n : 0; };
