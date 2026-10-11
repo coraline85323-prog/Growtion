@@ -98,6 +98,19 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
 @keyframes roll{from{transform:translateY(-110%)}}
 .fstack .perday{text-align:left}
 .fstack .key .face{padding:14px 6px;font-size:17px}
+/* accelerator pedal: spending burns fuel, so logging a spend is pressing the gas. brushed aluminium plate, rubber studs, red badge */
+.pedal{display:flex;flex-direction:column;align-items:center;background:none;border:0;padding:4px 0 0;cursor:pointer;perspective:300px;-webkit-tap-highlight-color:transparent}
+.pedal .pad{position:relative;display:grid;grid-template-columns:1fr 1fr;align-content:space-evenly;justify-items:center;gap:7px 8px;width:54%;max-width:100px;aspect-ratio:.52;padding:12% 11%;border-radius:12px;
+  transform-origin:50% 100%;transform:rotateX(14deg);transition:transform .12s ease-out;
+  background:repeating-linear-gradient(90deg,rgba(255,255,255,.05) 0 1px,transparent 1px 3px),linear-gradient(100deg,#9c9a95,#e4e2dd 30%,#b9b7b1 55%,#eceae5 78%,#a3a19b);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.7),inset 0 -1px 0 rgba(0,0,0,.25),3px 4px 0 #111,4px 10px 14px rgba(0,0,0,.6)}
+.pedal .ov{display:block;width:96%;aspect-ratio:1.6;border-radius:50%;background:radial-gradient(ellipse at 50% 35%,#3a3936,#0d0d0c 70%);box-shadow:inset 0 2px 2px rgba(0,0,0,.8),0 1px 0 rgba(255,255,255,.6)}
+.pedal .logo{grid-column:1/-1;font:italic 800 21px/1 var(--f-ui);letter-spacing:-.02em;color:#d8222a;transform:skewX(-14deg);text-shadow:0 1px 0 rgba(255,255,255,.5);padding:2px 0}
+.pedal .scr{position:absolute;width:7px;height:7px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#fff,#9a9893 60%,#5f5d58);box-shadow:0 0 0 1px rgba(0,0,0,.25)}
+.pedal .scr.a{left:22%;top:26%}.pedal .scr.b{right:22%;top:26%}.pedal .scr.c{left:22%;bottom:22%}.pedal .scr.d{right:22%;bottom:22%}
+.pedal .cap{margin-top:10px;font:600 12px/1 var(--f-tc);letter-spacing:.18em;color:var(--orange-hot)}
+.pedal:active .pad,.pedal.press .pad{transform:rotateX(36deg) translateY(2px)}
+.pedal:focus-visible{outline:2px solid var(--phosphor);outline-offset:4px;border-radius:12px}
 .fuel{display:flex;flex-direction:column;gap:6px;min-width:0}
 .dial{border-radius:12px;background:radial-gradient(ellipse at 50% 85%,#1d1c19,#0d0c0a 80%);box-shadow:inset 0 0 0 2px #3a362f,inset 0 0 0 5px #121110,inset 0 6px 14px rgba(0,0,0,.8);padding:6px 6px 0}
 .dial svg{display:block;width:100%;height:auto}
@@ -589,7 +602,7 @@ button.sync{font:inherit;border:0;cursor:pointer}
       <div class="fstack">
         <div><div class="label">這週還能花</div><div class="fodo" id="left" role="img" aria-label="這週還能花"><small>NT$</small><span class="digits" id="leftDigits"></span></div></div>
         <div class="perday">平均每天<b id="perDay">NT$0</b></div>
-        <button class="key" id="openSpend"><span class="face">記一筆<small>SPEND</small></span></button>
+        <button class="pedal" id="openSpend" aria-label="踩油門，記一筆花費"><span class="pad"><i class="scr a"></i><i class="scr b"></i><i class="scr c"></i><i class="scr d"></i><i class="ov"></i><i class="ov"></i><i class="ov"></i><i class="ov"></i><b class="logo">grow</b><i class="ov"></i><i class="ov"></i><i class="ov"></i><i class="ov"></i><i class="ov"></i><i class="ov"></i></span><span class="cap">踩油門 · 記一筆</span></button>
       </div>
     </section>
 
@@ -1456,6 +1469,7 @@ button.sync{font:inherit;border:0;cursor:pointer}
 
   /* ---------- spend ---------- */
   $('openSpend').onclick=()=>{
+    const pd=$('openSpend'); pd.classList.add('press'); setTimeout(()=>pd.classList.remove('press'),220);
     let amt='', cat='';
     const s = sheet(`<h2>記一筆花費</h2><div class="amount" id="amt">NT$0</div>
       <div class="chips" style="margin-top:10px">${CATS.map(c=>`<button class="chip" data-c="${c}">${c}</button>`).join('')}</div>
