@@ -43,7 +43,7 @@ function fit(c, img, maxW, maxH, cx, bottom){
 
 let LEAF=[], PET=[];
 /* join points the user set in the flower prototype (normalised to each drawing); leaves use the topmost pixel */
-const ANCH = {leaf:{}, pet:{0:[.461,.511],1:[.482,.53],2:[.508,.765],3:[.51,.553],4:[.481,.917],5:[.504,.545],6:[.541,.548],7:[.501,.181],8:[.601,.757],9:[.504,.907],10:[.594,.903]}}, DEF = {leaf:[], pet:[]};
+const ANCH = {leaf:{}, pet:{0:[.461,.511],1:[.482,.53],2:[.508,.765],3:[.51,.553],4:[.481,.917],5:[.504,.545],6:[.541,.548],7:[.492,.743],8:[.601,.757],9:[.504,.907],10:[.594,.903]}}, DEF = {leaf:[], pet:[]};
 function topPoint(cv){ const d=cv.getContext('2d').getImageData(0,0,cv.width,cv.height).data;
   for(let y=0;y<cv.height;y++) for(let x=0;x<cv.width;x++) if(d[(y*cv.width+x)*4+3]>160) return [x/cv.width, y/cv.height];
   return [.5,0]; }
