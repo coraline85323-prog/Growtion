@@ -450,7 +450,7 @@ nav .needle{position:absolute;z-index:2;top:2px;height:20px;width:2px;margin-lef
 .tv .main small{display:block;font:13px var(--f-px);color:var(--orange-hot);margin-top:3px;letter-spacing:.06em}
 .tv .ticker{position:absolute;left:0;right:0;bottom:0;height:26px;z-index:2;background:#0b0a09;border-top:1px solid #2a2721;display:flex;align-items:center;overflow:hidden}
 .tv .ticker .tag{position:relative;z-index:1;flex:none;height:100%;display:grid;place-items:center;padding:0 8px;background:var(--dial-red);color:#fff;font:700 10px/1 var(--f-ui);letter-spacing:.14em}
-.tv .ticker .run{white-space:nowrap;font:12px var(--f-px);color:var(--ink);padding-left:10px;animation:tickrun 24s linear infinite}
+.tv .ticker .run{white-space:nowrap;font:12px var(--f-px);color:var(--ink);padding-left:10px;animation:tickrun 24s linear infinite;will-change:transform}
 .tv .ticker .run em{font-style:normal;color:var(--orange-hot);margin:0 14px}
 @keyframes tickrun{to{transform:translateX(-100%)}}
 .tv .empty{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:radial-gradient(ellipse at center,#0e2412,var(--crt) 80%);color:var(--phosphor);text-shadow:0 0 6px rgba(142,245,154,.5);font-family:var(--f-mono);text-align:center;padding:20px}
@@ -530,7 +530,7 @@ button.sync{font:inherit;border:0;cursor:pointer}
 .login-card input{font:inherit;font-size:16px;padding:10px 12px;border-radius:8px;border:1px solid var(--edge);background:var(--plate-lo);color:var(--ink)}
 .linkish{background:none;border:0;color:var(--orange-hot);font:inherit;font-size:14px;cursor:pointer;padding:6px}
 .lgMsg{min-height:1.4em;font-size:13px;color:var(--warn)}
-@media (prefers-reduced-motion:reduce){*:not(.blink){animation:none!important;transition:none!important}}
+@media (prefers-reduced-motion:reduce){*:not(.blink):not(.run){animation:none!important;transition:none!important}}
 </style>
 
 <div class="app">
@@ -1395,6 +1395,7 @@ button.sync{font:inherit;border:0;cursor:pointer}
       document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on', b===nv)); placeNeedle();
       ['vToday','vBrain','vJournal','vWorld'].forEach(v=>$(v).hidden = v!==nv.dataset.view);
       if(nv.dataset.view==='vJournal') renderSlots();
+      if(nv.dataset.view==='vWorld') document.querySelectorAll('#wNews .run').forEach(r=>{ r.style.animation='none'; void r.offsetWidth; r.style.animation=''; });
       window.scrollTo(0,0);
     }
   });
