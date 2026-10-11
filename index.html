@@ -1143,7 +1143,7 @@ button.sync{font:inherit;border:0;cursor:pointer}
     const lines = has
       ? it.map(t=> t ? `<button class="ol" data-hp="edit"><i>·</i><span>${esc(t)}</span></button>` : '').join('')
       : `<button class="ol empty" data-hp="edit"><b>&gt;</b><span>點這裡寫下明天想做的三件事</span></button>`;
-    $('hopeLines').innerHTML = `<div class="olh"><span>&gt; 明日的希望</span>${has?'<button data-hp="edit">編輯</button>':''}</div>${lines}<div>&gt; 半夜 12 點會搬進本日展望</div>`;
+    $('hopeLines').innerHTML = `<div class="olh"><span>&gt; 明日的希望</span>${has?'<button data-hp="edit">編輯</button>':''}</div>${lines}<div>&gt; 做想做的事</div><div>&gt; 問問自己現在想做什麼？</div>`;
   }
   $('hopeLines').addEventListener('click', e=>{
     if(!e.target.closest('[data-hp]')) return;
