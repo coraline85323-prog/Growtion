@@ -231,6 +231,8 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
 .outlook .ol b{font-weight:400;flex:none;white-space:nowrap}
 .outlook .ol.done span{text-decoration:line-through;opacity:.55}
 .outlook .ol.empty span{opacity:.45}
+.hopecrt{margin-top:10px}
+.outlook .ol i{font-style:normal;flex:none}
 .outlook .olh{display:flex;justify-content:space-between;align-items:baseline}
 .outlook .olh button{background:none;border:1px solid rgba(142,245,154,.45);border-radius:4px;color:var(--phosphor);font:12px var(--f-mono);padding:2px 8px;cursor:pointer}
 /* timeline: thin grey line joining the lights */
@@ -568,6 +570,10 @@ button.sync{font:inherit;border:0;cursor:pointer}
     <div class="crt"><div class="screen outlook" aria-label="本日展望">
       <i class="brk tl"></i><i class="brk tr"></i><i class="brk bl"></i><i class="brk br"></i>
       <div class="lines" id="crtLines">&gt; 載入中<span class="blink">_</span></div>
+    </div></div>
+    <div class="crt hopecrt"><div class="screen outlook" aria-label="明日的希望">
+      <i class="brk tl"></i><i class="brk tr"></i><i class="brk bl"></i><i class="brk br"></i>
+      <div class="lines" id="hopeLines"></div>
     </div></div>
 
     <section class="plate tlmini" aria-label="時間軸">
@@ -1116,7 +1122,44 @@ button.sync{font:inherit;border:0;cursor:pointer}
     $('bmText').value = ''; await api.put(newId(), {kind:'todo', cat:bmCat, text:t, ts:Date.now(), done:null});
   };
 
+  /* tomorrow's hopes: three things written the day before; after midnight they move into that day's outlook */
+  const nextDay = () => { const d=new Date(); d.setDate(d.getDate()+1); return dayKey(d); };
+  let hopeMoving = false;
+  async function moveHopes(today){
+    const hs = events.filter(e=>e.kind==='hope' && e.id.slice(2)<=today); if(!hs.length || hopeMoving) return;
+    hopeMoving = true;
+    try{
+      const o = events.find(e=>e.id==='o-'+today), now = new Date();
+      const base = o ? (({id,...r})=>r)(o) : {kind:'outlook', ts:now.getTime(), day:today, week:weekKey(now), items:['','',''], done:[false,false,false]};
+      const items = [...(base.items||['','',''])], done = [...(base.done||[false,false,false])];
+      const left = [...new Set(hs.flatMap(h=>h.items||[]).filter(Boolean))].filter(t=>!items.includes(t));
+      for(let i=0;i<3 && left.length;i++) if(!items[i]){ items[i]=left.shift(); done[i]=false; }
+      await api.put('o-'+today, {...base, items, done, pts:5*done.filter((d,i)=>d&&items[i]).length});
+      for(const h of hs) await api.del(h.id);
+    } finally { hopeMoving = false; }
+  }
+  function renderHopes(){
+    const h = events.find(e=>e.id==='h-'+nextDay()), it = h ? h.items : ['','',''], has = it.some(Boolean);
+    const lines = has
+      ? it.map(t=> t ? `<button class="ol" data-hp="edit"><i>·</i><span>${esc(t)}</span></button>` : '').join('')
+      : `<button class="ol empty" data-hp="edit"><b>&gt;</b><span>點這裡寫下明天想做的三件事</span></button>`;
+    $('hopeLines').innerHTML = `<div class="olh"><span>&gt; 明日的希望</span>${has?'<button data-hp="edit">編輯</button>':''}</div>${lines}<div>&gt; 半夜 12 點會搬進本日展望</div>`;
+  }
+  $('hopeLines').addEventListener('click', e=>{
+    if(!e.target.closest('[data-hp]')) return;
+    const key = nextDay(), h = events.find(x=>x.id==='h-'+key), it = h ? h.items : ['','',''];
+    const s = sheet(`<h2>明日的希望</h2><p style="margin:0 0 10px;color:var(--ink-dim);font-size:14px">明天想做的三件事。過了半夜 12 點，會自動搬到本日展望。</p>
+      <div class="opts">${[0,1,2].map(i=>`<input class="field" id="hp${i}" maxlength="60" placeholder="${i+1}." value="${esc(it[i]||'')}">`).join('')}</div>
+      <div class="row-end"><button class="key" id="hpSave"><span class="face">存起來</span></button></div>`);
+    setTimeout(()=>s.querySelector('#hp0').focus(),50);
+    s.querySelector('#hpSave').onclick=async()=>{
+      const items=[0,1,2].map(i=>s.querySelector('#hp'+i).value.trim()); s.remove();
+      if(!items.some(Boolean)){ if(h) await api.del('h-'+key); return; }
+      const now=new Date(); await api.put('h-'+key, {kind:'hope', for:key, ts:now.getTime(), day:dayKey(now), week:weekKey(now), items});
+    };
+  });
   function renderOutlook(D){
+    moveHopes(D.today); renderHopes();
     const o = events.find(e=>e.id==='o-'+D.today), it = o ? o.items : ['','',''], dn = o ? (o.done||[]) : [];
     const has = it.some(Boolean);
     const lines = has
@@ -1292,6 +1335,7 @@ button.sync{font:inherit;border:0;cursor:pointer}
       case 'bill': return {t:'處理帳務', s:`+${e.pts} 種子`, c:''};
       case 'chore': return {t:'整理黑炭的窩', s:`+${e.pts} 種子`, c:''};
       case 'med': return {t:`服藥：${esc(e.med)} ${esc(e.dose||'')}`, s:'', c:'g'};
+      case 'hope': return {t:'寫下明日的希望', s:esc((e.items||[]).filter(Boolean).join(' · ')), c:'g'};
       case 'outlook': return {t:'寫下本日展望', s:esc((e.items||[]).filter(Boolean).map((t,i)=>(e.done&&e.done[i]?'✓ ':'')+t).join(' · ')), c:'g'};
       default: return {t:e.kind, s:'', c:'d'};
     }
