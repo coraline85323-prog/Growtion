@@ -84,7 +84,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
 .dashg svg{display:block;width:100%;height:auto;overflow:visible}
 .dashg .needle{transition:transform 1.1s cubic-bezier(.3,1.35,.5,1)}
 .fuelp{display:grid;grid-template-columns:42% minmax(0,1fr);gap:16px;align-items:stretch}
-.fstack{display:flex;flex-direction:column;justify-content:space-between;gap:14px;padding-block:6px;min-width:0}
+.fstack{display:flex;flex-direction:column;justify-content:flex-start;gap:14px;padding-block:6px;min-width:0}
 .fstack .label{margin-bottom:6px}
 .fstack .left{font-size:32px}
 .fodo{display:flex;align-items:center;gap:6px;margin-top:4px}
@@ -100,7 +100,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
 .fstack .key .face{padding:14px 6px;font-size:17px}
 /* accelerator pedal: spending burns fuel, so logging a spend is pressing the gas. brushed aluminium plate, rubber studs, red badge */
 .pedal{display:flex;flex-direction:column;align-items:center;background:none;border:0;padding:4px 0 0;cursor:pointer;perspective:300px;-webkit-tap-highlight-color:transparent}
-.pedal .pad{position:relative;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));align-content:space-evenly;align-items:center;justify-items:center;gap:7px 6px;width:96%;max-width:190px;aspect-ratio:1.6;padding:9% 8% 11%;
+.pedal .pad{position:relative;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));align-content:space-evenly;align-items:center;justify-items:center;gap:7px 6px;aspect-ratio:1.6;padding:9% 8% 11%;
   border-radius:14px 14px 30px 30px / 12px 12px 34px 34px;transform-origin:50% 100%;transform:rotateX(14deg);transition:transform .12s ease-out;
   background:repeating-linear-gradient(90deg,rgba(255,255,255,.05) 0 1px,transparent 1px 3px),linear-gradient(100deg,#9c9a95,#e4e2dd 30%,#b9b7b1 55%,#eceae5 78%,#a3a19b);
   box-shadow:inset 0 1px 0 rgba(255,255,255,.7),inset 0 -1px 0 rgba(0,0,0,.25),0 5px 0 #111,2px 11px 14px rgba(0,0,0,.6)}
@@ -244,7 +244,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
 .outlook .ol b{font-weight:400;flex:none;white-space:nowrap}
 .outlook .ol.done span{text-decoration:line-through;opacity:.55}
 .outlook .ol.empty span{opacity:.45}
-.hopecrt{margin-top:10px}
+.outlook .hopes{margin-top:12px;padding-top:10px;border-top:1px dashed rgba(142,245,154,.3)}
 .outlook .ol i{font-style:normal;flex:none}
 .outlook .olh{display:flex;justify-content:space-between;align-items:baseline}
 .outlook .olh button{background:none;border:1px solid rgba(142,245,154,.45);border-radius:4px;color:var(--phosphor);font:12px var(--f-mono);padding:2px 8px;cursor:pointer}
@@ -585,10 +585,7 @@ button.sync{font:inherit;border:0;cursor:pointer}
     <div class="crt"><div class="screen outlook" aria-label="本日展望">
       <i class="brk tl"></i><i class="brk tr"></i><i class="brk bl"></i><i class="brk br"></i>
       <div class="lines" id="crtLines">&gt; 載入中<span class="blink">_</span></div>
-    </div></div>
-    <div class="crt hopecrt"><div class="screen outlook" aria-label="明日的希望">
-      <i class="brk tl"></i><i class="brk tr"></i><i class="brk bl"></i><i class="brk br"></i>
-      <div class="lines" id="hopeLines"></div>
+      <div class="lines hopes" id="hopeLines"></div>
     </div></div>
 
     <section class="plate tlmini" aria-label="時間軸">
@@ -890,7 +887,7 @@ button.sync{font:inherit;border:0;cursor:pointer}
     $('vPts').innerHTML = [...digits].map((c,i)=>`<b class="${i<lead?'z':''}">${c}</b>`).join('');
     $('odo').setAttribute('aria-label', `種子 ${seeds} 顆`);
 
-    renderOutlook(D);
+    renderOutlook(D); requestAnimationFrame(fitPedal);
 
     $('goals').innerHTML = GOALS.map(g=>{
       const c = D.counts[g.id], done = c>=g.target, cols = `grid-template-columns:repeat(${g.target},1fr)`;
@@ -1158,7 +1155,7 @@ button.sync{font:inherit;border:0;cursor:pointer}
     const lines = has
       ? it.map(t=> t ? `<button class="ol" data-hp="edit"><i>·</i><span>${esc(t)}</span></button>` : '').join('')
       : `<button class="ol empty" data-hp="edit"><b>&gt;</b><span>點這裡寫下明天想做的三件事</span></button>`;
-    $('hopeLines').innerHTML = `<div class="olh"><span>&gt; 明日的希望</span>${has?'<button data-hp="edit">編輯</button>':''}</div>${lines}<div>&gt; 做想做的事</div><div>&gt; 問問自己現在想做什麼？</div>`;
+    $('hopeLines').innerHTML = `<div class="olh"><span>&gt; 明日的希望</span>${has?'<button data-hp="edit">編輯</button>':''}</div>${lines}<div style="margin-top:10px">&gt; 做想做的事</div><div>&gt; 現在想做什麼<span class="blink">_</span></div>`;
   }
   $('hopeLines').addEventListener('click', e=>{
     if(!e.target.closest('[data-hp]')) return;
@@ -1181,7 +1178,7 @@ button.sync{font:inherit;border:0;cursor:pointer}
       ? it.map((t,i)=> t ? `<button class="ol ${dn[i]?'done':''}" data-ol="${i}"><b>${dn[i]?'[✓]':'[ ]'}</b><span>${esc(t)}</span></button>` : '').join('')
       : `<button class="ol empty" data-ol="edit"><b>&gt;</b><span>點這裡寫下今天想做的三件事</span></button>`;
     const allDone = has && it.every((t,i)=>!t||dn[i]);
-    $('crtLines').innerHTML = `<div class="olh"><span>&gt; 本日展望</span>${has?'<button data-ol="edit">編輯</button>':''}</div>${lines}<div>&gt; ${allDone?'今天的展望都完成了':'待命中'}<span class="blink">_</span></div>`;
+    $('crtLines').innerHTML = `<div class="olh"><span>&gt; 本日展望</span>${has?'<button data-ol="edit">編輯</button>':''}</div>${lines}${allDone?'<div>&gt; 今天的展望都完成了</div>':''}`;
   }
   $('crtLines').addEventListener('click', async e=>{
     const b = e.target.closest('[data-ol]'); if(!b) return;
@@ -1456,7 +1453,7 @@ button.sync{font:inherit;border:0;cursor:pointer}
     if(soon){ toast(`「${soon.dataset.soon}」下一版再做`); return; }
     const nv = e.target.closest('nav [data-view]');
     if(nv){
-      document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on', b===nv)); placeNeedle();
+      document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on', b===nv)); placeNeedle(); requestAnimationFrame(fitPedal);
       ['vToday','vBrain','vJournal','vWorld'].forEach(v=>$(v).hidden = v!==nv.dataset.view);
       if(nv.dataset.view==='vJournal') renderSlots();
       if(nv.dataset.view==='vWorld') document.querySelectorAll('#wNews .run').forEach(r=>{ r.style.animation='none'; void r.offsetWidth; r.style.animation=''; });
@@ -1466,6 +1463,16 @@ button.sync{font:inherit;border:0;cursor:pointer}
 
   function placeNeedle(){ const on=document.querySelector('nav button.on'), nd=document.querySelector('nav .needle'); if(on&&nd) nd.style.left=(on.offsetLeft+on.offsetWidth/2)+'px'; }
   placeNeedle(); addEventListener('resize', placeNeedle);
+  /* size the gas pedal so its caption's bottom lines up with the bottom of the fuel dial */
+  function fitPedal(){
+    const ped=$('openSpend'), pad=ped && ped.querySelector('.pad'), dial=$('gFuel').querySelector('svg'); if(!pad||!dial||!ped.offsetParent) return;
+    ped.style.marginTop='0px'; const col=ped.parentElement.clientWidth;
+    let w=Math.min(col*.78, 150); pad.style.width=w+'px';
+    let room = dial.getBoundingClientRect().bottom - ped.getBoundingClientRect().bottom;
+    if(room < 0) for(let k=0;k<4;k++){ const r = dial.getBoundingClientRect().bottom - ped.getBoundingClientRect().bottom; if(r>=-0.5) break; w=Math.max(70, w + r*1.6); pad.style.width=w+'px'; }
+    ped.style.marginTop = Math.max(0, dial.getBoundingClientRect().bottom - ped.getBoundingClientRect().bottom)+'px';
+  }
+  addEventListener('resize', fitPedal); document.fonts && document.fonts.ready.then(fitPedal);
 
   /* ---------- spend ---------- */
   $('openSpend').onclick=()=>{
