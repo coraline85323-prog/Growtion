@@ -316,7 +316,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
 .lg .field.nmf{font-family:var(--f-read)}
 .tape{position:relative;border-radius:8px;padding:6px 10px;background:var(--crt);box-shadow:inset 0 0 0 1px #2c3a2e;color:var(--phosphor);text-shadow:0 0 5px rgba(142,245,154,.4)}
 .tape::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(0,0,0,.22) 0 1px,transparent 1px 3px)}
-.lg-cols,.lg-line,.lg-in,.lg-totl{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1fr) minmax(0,1fr) 40px;gap:8px;align-items:center}
+.lg-cols,.lg-line,.lg-in,.lg-totl{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.4fr) 40px;gap:8px;align-items:center}
 .lg-cols{font:11px var(--f-ui);letter-spacing:.14em;color:var(--phosphor);opacity:.6;padding:4px 0 6px;border-bottom:1px dashed rgba(142,245,154,.3)}
 .lg-cols span:not(:first-child),.lg-in .field{text-align:right}
 .lg-line{padding:6px 0;border-bottom:1px dashed rgba(142,245,154,.14);font:15px var(--f-px)}
@@ -1256,12 +1256,12 @@ button.sync{font:inherit;border:0;cursor:pointer}
           <section class="lgp"><div class="lgp-h"><span class="tag">存款</span><span class="tot">${fmt(T.acc)}</span></div>${LG_ACC.map(a=>acc('acc',a)).join('')}</section>
           <section class="lgp"><div class="lgp-h"><span class="tag">債務</span><span class="tot">${fmt(T.debt)}</span></div>${LG_DEBT.map(a=>acc('debt',a)).join('')}</section>
         </div>
-        <section class="lgp"><div class="lgp-h"><span class="tag">收支登記</span><span class="lg-month"><button data-lg-m="-1" aria-label="上個月">◀</button>${yy}/${mm}<button data-lg-m="1" aria-label="下個月">▶</button></span></div>
-          <div class="tape"><div class="lg-cols"><span>日期</span><span>收入</span><span>支出</span><span></span></div>
+        <section class="lgp"><div class="lgp-h"><span class="tag">預計收入</span><span class="lg-month"><button data-lg-m="-1" aria-label="上個月">◀</button>${yy}/${mm}<button data-lg-m="1" aria-label="下個月">▶</button></span></div>
+          <div class="tape"><div class="lg-cols"><span>日期</span><span>收入</span><span></span></div>
           ${lines.length ? lines.map(l=>{ const a = `${l.amt>0?'+':'-'}${fmt(Math.abs(l.amt))}`;
-            return `<div class="lg-line"><span class="dt">${l.date.slice(5).replace('-','/')}</span><span class="amt">${l.amt>0?a:''}</span><span class="amt">${l.amt<0?a:''}</span><button class="x" data-lg-del="${l.id}" aria-label="刪掉這筆">✕</button></div>`; }).join('') : '<div class="empty">這個月還沒有登記。</div>'}
-          <div class="lg-totl"><span>本月合計</span><span>+${fmt(T.inc)}</span><span>-${fmt(T.out)}</span><span></span></div></div>
-          <form id="lgAdd" autocomplete="off"><div class="lg-in"><input class="field dtf" id="lgDate" inputmode="numeric" value="${defDate()}" placeholder="月/日" aria-label="日期（月/日）"><input class="field" id="lgInc" inputmode="numeric" placeholder="+收入" aria-label="收入金額"><input class="field" id="lgExp" inputmode="numeric" placeholder="-支出" aria-label="支出金額"><button class="key lg-enter" type="submit" aria-label="登錄"><span class="face">⏎</span></button></div></form>
+            return `<div class="lg-line"><span class="dt">${l.date.slice(5).replace('-','/')}</span><span class="amt">${a}</span><button class="x" data-lg-del="${l.id}" aria-label="刪掉這筆">✕</button></div>`; }).join('') : '<div class="empty">這個月還沒有登記。</div>'}
+          <div class="lg-totl"><span>本月合計</span><span>${money(T.inc-T.out).replace(/^(?!-)/,'+')}</span><span></span></div></div>
+          <form id="lgAdd" autocomplete="off"><div class="lg-in"><input class="field dtf" id="lgDate" inputmode="numeric" value="${defDate()}" placeholder="月/日" aria-label="日期（月/日）"><input class="field" id="lgInc" inputmode="numeric" placeholder="+收入" aria-label="收入金額"><button class="key lg-enter" type="submit" aria-label="登錄"><span class="face">⏎</span></button></div></form>
         </section>
         <section class="lgp"><div class="lgp-h"><span class="tag">預計支出</span><span class="tot">${fmt(T.fixed)}</span></div>
           ${c.fixed.length ? c.fixed.map((f,i)=>`<label class="lg-fx"><span class="nm">${esc(f.name)}</span><input class="field" inputmode="numeric" data-lg-fxamt="${i}" value="${fmt(num(f.amt))}" aria-label="${esc(f.name)}金額"><button type="button" class="x" data-lg-fx="${i}" aria-label="刪掉${esc(f.name)}">✕</button></label>`).join('') : '<div class="empty">還沒有預計支出。</div>'}
@@ -1277,7 +1277,7 @@ button.sync{font:inherit;border:0;cursor:pointer}
       });
       s.querySelector('#lgAdd').onsubmit = async ev => {
         ev.preventDefault();
-        const inc = Math.abs(num(s.querySelector('#lgInc').value)), out = Math.abs(num(s.querySelector('#lgExp').value)), d = parseMD(s.querySelector('#lgDate').value);
+        const inc = Math.abs(num(s.querySelector('#lgInc').value)), out = 0, d = parseMD(s.querySelector('#lgDate').value);
         if(!d){ toast('日期看不懂，請寫成 10/9'); return; }
         if(!inc && !out) return;
         if(inc) await api.put(newId(), {kind:'cash', date:d, amt: inc, ts:Date.now()});
@@ -1309,7 +1309,7 @@ button.sync{font:inherit;border:0;cursor:pointer}
       <div class="cap"><span>&gt; 結餘</span><span>${yy}/${mm}</span></div>
       <div class="amt"><small>NT$</small>${money(T.left)}</div>
       <div class="lg-bar" aria-hidden="true"><i class="s" style="width:${pc(T.left)}"></i><i class="d" style="width:${pc(T.debt + T.out)}"></i><i class="f" style="width:${pc(T.fixed)}"></i></div>
-      <div class="eq"><span>存款 ${fmt(T.acc)}</span><span>− 債務 ${fmt(T.debt)}</span><span>+ 收入 ${fmt(T.inc)}</span><span>− 支出 ${fmt(T.out)}</span><span>− 預計 ${fmt(T.fixed)}</span></div></div></${tag}>`;
+      <div class="eq"><span>存款 ${fmt(T.acc)}</span><span>− 債務 ${fmt(T.debt)}</span><span>+ 預計收入 ${fmt(T.inc)}</span>${T.out?`<span>− 支出 ${fmt(T.out)}</span>`:''}<span>− 預計 ${fmt(T.fixed)}</span></div></div></${tag}>`;
   }
   function renderBill(D){
     const n=D.now, y=n.getFullYear(), m=n.getMonth(), d=n.getDate();
