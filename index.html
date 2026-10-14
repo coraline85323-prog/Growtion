@@ -120,7 +120,8 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
 .pedal .ov{display:block;width:88%;aspect-ratio:1.6;border-radius:50%;background:radial-gradient(ellipse at 50% 35%,#3a3936,#0d0d0c 70%);box-shadow:inset 0 2px 2px rgba(0,0,0,.8),0 1px 0 rgba(255,255,255,.6)}
 .pedal .logo{grid-column:span 3;align-self:stretch;justify-self:stretch;position:relative;display:grid;place-items:center;margin:-4px 3%}
 .pedal .logo svg{display:block;height:100%;max-height:30px;aspect-ratio:1;overflow:visible}
-.pedal .logo path{fill:none;stroke:#d8222a;stroke-width:8;stroke-linejoin:miter;filter:drop-shadow(0 1px 0 rgba(255,255,255,.5))}
+.pedal .logo svg > path{fill:none;stroke:#d8222a;stroke-width:14;stroke-linejoin:miter}
+.pedal .logo svg{filter:drop-shadow(0 1px 0 rgba(255,255,255,.5))}
 .pedal .scr{position:absolute;width:7px;height:7px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#fff,#9a9893 60%,#5f5d58);box-shadow:0 0 0 1px rgba(0,0,0,.25)}
 .pedal .scr{transform:translate(-50%,-50%)}.pedal .scr.a{left:0;top:0}.pedal .scr.b{left:100%;top:0}.pedal .scr.c{left:0;top:100%}.pedal .scr.d{left:100%;top:100%}
 .pedal .cap{margin-top:10px;font:600 12px/1 var(--f-tc);letter-spacing:.18em;color:var(--orange-hot)}
@@ -616,7 +617,7 @@ button.sync{font:inherit;border:0;cursor:pointer}
       </div>
       <div class="fstack">
         <div class="flog" id="fLog" aria-label="最近兩筆花費"></div>
-        <button class="pedal" id="openSpend" aria-label="踩油門，記一筆花費"><span class="pad"><i class="ov"></i><i class="ov"></i><i class="ov"></i><i class="ov"></i><i class="ov"></i><i class="ov"></i><b class="logo"><i class="scr a"></i><i class="scr b"></i><i class="scr c"></i><i class="scr d"></i><svg viewBox="0 0 100 100" aria-hidden="true"><path d="M24 4H76L94 22V38H68V32L64 30H36L32 34V66L36 70H64L68 66V62H52V46H94V78L76 96H24L6 78V22Z"/></svg></b><i class="ov"></i><i class="ov"></i><i class="ov"></i><i class="ov"></i><i class="ov"></i><i class="ov"></i></span><span class="cap">踩油門 · 記一筆</span></button>
+        <button class="pedal" id="openSpend" aria-label="踩油門，記一筆花費"><span class="pad"><i class="ov"></i><i class="ov"></i><i class="ov"></i><i class="ov"></i><i class="ov"></i><i class="ov"></i><b class="logo"><i class="scr a"></i><i class="scr b"></i><i class="scr c"></i><i class="scr d"></i><svg viewBox="0 0 100 100" aria-hidden="true"><defs><clipPath id="gClip"><path d="M24 4H76L94 22V38H68V32L64 30H36L32 34V66L36 70H64L68 66V62H52V46H94V78L76 96H24L6 78V22Z"/></clipPath></defs><path d="M24 4H76L94 22V38H68V32L64 30H36L32 34V66L36 70H64L68 66V62H52V46H94V78L76 96H24L6 78V22Z" clip-path="url(#gClip)"/></svg></b><i class="ov"></i><i class="ov"></i><i class="ov"></i><i class="ov"></i><i class="ov"></i><i class="ov"></i></span><span class="cap">踩油門 · 記一筆</span></button>
         <div><div class="label">這週還能花</div><div class="fodo" id="left" role="img" aria-label="這週還能花"><small>NT$</small><span class="digits" id="leftDigits"></span></div></div>
       </div>
     </section>
