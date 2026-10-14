@@ -500,6 +500,11 @@ nav .needle{position:absolute;z-index:2;top:2px;height:20px;width:2px;margin-lef
 .tv .scn,.tv .noise{position:absolute;inset:0;width:100%;height:100%!important;aspect-ratio:auto!important}
 .tv .scn{z-index:1}
 .tv canvas[hidden]{display:none}
+.tv.alt .lower{display:flex;bottom:26px;padding:0}
+.tv.alt .kick{flex:none;display:flex;align-items:center}
+.tv.alt .main{flex:1;min-width:0;padding:5px 10px}
+.tv.alt .main b{font-size:15px}
+.tv.alt .main small{display:none}
 .tv .noise{z-index:3;image-rendering:pixelated}
 .tv .empty{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:radial-gradient(ellipse at center,#0e2412,var(--crt) 80%);color:var(--phosphor);text-shadow:0 0 6px rgba(142,245,154,.5);font-family:var(--f-mono);text-align:center;padding:20px}
 .tv .empty b{font:400 22px var(--f-px);letter-spacing:.12em}
@@ -986,18 +991,16 @@ button.sync{font:inherit;border:0;cursor:pointer}
   function tvScenes(f){
     if(TV.n === f.n) return;
     TV.n = f.n; TV.f = f; TV.imgs = null; TV.cur = -1;
-    const big = src => { const c = document.createElement('canvas'); c.width = c.height = 320; const x = c.getContext('2d'); x.imageSmoothingEnabled = false; x.drawImage(src, 0, 0, 320, 320); return c.toDataURL(); };
     const full = document.createElement('canvas'); full.width = full.height = 160; Flower.paint(full, f.r);
-    const n = f.n, list = Scenes.build({full: big(full), bare: big(Flower.bare(f.r))});
-    Promise.all(list.map(s => Promise.all(s.frames.map(svg => { const im = new Image(); im.src = URL.createObjectURL(new Blob([svg], {type:'image/svg+xml'})); return im.decode().then(() => im); }))
-      .then(ims => ({...s, ims}))))
+    const n = f.n;
+    Scenes.build(full, Flower.bare(f.r))
       .then(r => { if(TV.n === n) TV.imgs = r; }).catch(() => {});
   }
   function tvShow(){
     const tv = $('wNews').querySelector('.tv'); if(!tv || !TV.f) return;
     const scn = tv.querySelector('.scn'); if(!scn) return;
     const s = TV.cur >= 0 && TV.imgs && TV.imgs[TV.cur], f = TV.f, no = `No.${String(Flower.number(f.r)).padStart(5,'0')}`;
-    scn.hidden = !s;
+    scn.hidden = !s; tv.classList.toggle('alt', !!s);
     if(s) scn.getContext('2d').drawImage(s.ims[TV.fr], 0, 0, 480, 480);
     tv.querySelector('.ch').textContent = s ? s.ch : 'CH.03 花圃台';
     tv.querySelector('.kick').textContent = s ? s.kick : '最新培育種';
