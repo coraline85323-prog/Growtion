@@ -98,6 +98,15 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
 @keyframes roll{from{transform:translateY(-110%)}}
 .fstack .perday{text-align:left}
 .fstack .key .face{padding:14px 6px;font-size:17px}
+/* fuel log: the last two spends, printed like a trip-computer readout under the gauge */
+.flog{grid-column:1/-1;border-radius:8px;padding:8px 12px 6px;background:#0b0a09;box-shadow:inset 0 1px 3px rgba(0,0,0,.8),0 1px 0 rgba(255,255,255,.06)}
+.flog .fh{display:flex;justify-content:space-between;font:600 10px/1 var(--f-ui);letter-spacing:.2em;color:var(--ink-dim);padding-bottom:6px;border-bottom:1px solid #26231e}
+.flog .fr{display:grid;grid-template-columns:auto auto minmax(8px,1fr) auto;gap:8px;white-space:nowrap;align-items:baseline;padding:7px 0;font:14px/1 var(--f-px);color:var(--orange-hot);text-shadow:0 0 6px rgba(255,140,60,.35)}
+.flog .fr + .fr{border-top:1px dashed #2e2a24}
+.flog .fr .d{opacity:.65}.flog .fr .c{font-family:var(--f-tc);font-size:13px}
+.flog .fr i{align-self:center;height:0;border-bottom:2px dotted rgba(255,176,112,.3)}
+.flog .fr:first-of-type{color:#ffd0a0}
+.flog .none{padding:8px 0 4px;font:13px var(--f-tc);color:var(--ink-dim)}
 /* accelerator pedal: spending burns fuel, so logging a spend is pressing the gas. brushed aluminium plate, rubber studs, red badge */
 .pedal{display:flex;flex-direction:column;align-items:center;background:none;border:0;padding:4px 0 0;cursor:pointer;perspective:300px;-webkit-tap-highlight-color:transparent}
 .pedal .pad{position:relative;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));align-content:space-evenly;align-items:center;justify-items:center;gap:7px 6px;aspect-ratio:1.6;padding:9% 8% 11%;
@@ -601,6 +610,7 @@ button.sync{font:inherit;border:0;cursor:pointer}
         <div class="perday">平均每天<b id="perDay">NT$0</b></div>
         <button class="pedal" id="openSpend" aria-label="踩油門，記一筆花費"><span class="pad"><i class="scr a"></i><i class="scr b"></i><i class="scr c"></i><i class="scr d"></i><i class="ov"></i><i class="ov"></i><i class="ov"></i><i class="ov"></i><i class="ov"></i><i class="ov"></i><b class="logo">grow</b><i class="ov"></i><i class="ov"></i><i class="ov"></i><i class="ov"></i><i class="ov"></i><i class="ov"></i></span><span class="cap">踩油門 · 記一筆</span></button>
       </div>
+      <div class="flog" id="fLog" aria-label="最近兩筆花費"></div>
     </section>
 
     <section class="plate" aria-label="每週目標">
@@ -873,6 +883,11 @@ button.sync{font:inherit;border:0;cursor:pointer}
     L.setAttribute('aria-label', over ? `超過 ${fmt(-D.left)} 元` : `這週還能花 ${fmt(D.left)} 元`);
     meterDigits($('leftDigits'), amt.padStart(Math.max(4, amt.length), '0'), amt.length);
     $('perDay').textContent = over ? '下週重來' : 'NT$'+fmt(Math.floor(D.left/D.daysLeft));
+    const last2 = events.filter(e=>e.kind==='spend').sort((a,b)=>(b.ts||0)-(a.ts||0)).slice(0,2);
+    const when = t => { const d=new Date(t), k=dayKey(d); return k===D.today ? '今天' : `${d.getMonth()+1}/${d.getDate()}`; };
+    $('fLog').innerHTML = `<div class="fh"><span>耗油紀錄</span><span>LAST 2</span></div>` + (last2.length
+      ? last2.map(e=>`<div class="fr"><span class="d">${when(e.ts)}</span><span class="c">${esc(e.cat||'花費')}</span><i></i><span>−NT$${fmt(+e.amt||0)}</span></div>`).join('')
+      : '<div class="none">這週還沒有耗油。</div>');
 
     const tot = GOALS.reduce((s,g)=>s+g.target,0);
     const got = GOALS.reduce((s,g)=>s+Math.min(D.counts[g.id],g.target),0);
