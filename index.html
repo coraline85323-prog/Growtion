@@ -84,7 +84,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
 .dashg svg{display:block;width:100%;height:auto;overflow:visible}
 .dashg .needle{transition:transform 1.1s cubic-bezier(.3,1.35,.5,1)}
 .fuelp{display:grid;grid-template-columns:42% minmax(0,1fr);gap:16px;align-items:stretch}
-.fstack{display:flex;flex-direction:column;justify-content:flex-start;gap:14px;padding-block:6px;min-width:0}
+.fstack{display:flex;flex-direction:column;justify-content:space-between;gap:12px;padding-block:6px;min-width:0}
 .fstack .label{margin-bottom:6px}
 .fstack .left{font-size:32px}
 .fodo{display:flex;align-items:center;gap:6px;margin-top:4px}
@@ -96,10 +96,11 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
 .fodo.over .digits b.z{color:#5d4a2c}
 .fodo .digits b.roll span{animation:roll .45s cubic-bezier(.3,1.3,.5,1)}
 @keyframes roll{from{transform:translateY(-110%)}}
-.fstack .perday{text-align:left}
+.fleft{display:flex;flex-direction:column;gap:10px;min-width:0}
+.fleft .perday{text-align:left;padding-left:4px}
 .fstack .key .face{padding:14px 6px;font-size:17px}
 /* fuel log: the last two spends, printed like a trip-computer readout under the gauge */
-.flog{grid-column:1/-1;border-radius:8px;padding:8px 12px 6px;background:#0b0a09;box-shadow:inset 0 1px 3px rgba(0,0,0,.8),0 1px 0 rgba(255,255,255,.06)}
+.flog{border-radius:8px;padding:8px 12px 6px;background:#0b0a09;box-shadow:inset 0 1px 3px rgba(0,0,0,.8),0 1px 0 rgba(255,255,255,.06)}
 .flog .fh{display:flex;justify-content:space-between;font:600 10px/1 var(--f-ui);letter-spacing:.2em;color:var(--ink-dim);padding-bottom:6px;border-bottom:1px solid #26231e}
 .flog .fr{display:grid;grid-template-columns:auto auto minmax(8px,1fr) auto;gap:8px;white-space:nowrap;align-items:baseline;padding:7px 0;font:14px/1 var(--f-px);color:var(--orange-hot);text-shadow:0 0 6px rgba(255,140,60,.35)}
 .flog .fr + .fr{border-top:1px dashed #2e2a24}
@@ -109,7 +110,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
 .flog .none{padding:8px 0 4px;font:13px var(--f-tc);color:var(--ink-dim)}
 /* accelerator pedal: spending burns fuel, so logging a spend is pressing the gas. brushed aluminium plate, rubber studs, red badge */
 .pedal{display:flex;flex-direction:column;align-items:center;background:none;border:0;padding:4px 0 0;cursor:pointer;perspective:300px;-webkit-tap-highlight-color:transparent}
-.pedal .pad{position:relative;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));align-content:space-evenly;align-items:center;justify-items:center;gap:7px 6px;aspect-ratio:1.6;padding:9% 8% 11%;
+.pedal .pad{position:relative;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));align-content:space-evenly;align-items:center;justify-items:center;gap:7px 6px;width:min(100%,150px);aspect-ratio:1.6;padding:9% 8% 11%;
   border-radius:14px 14px 30px 30px / 12px 12px 34px 34px;transform-origin:50% 100%;transform:rotateX(14deg);transition:transform .12s ease-out;
   background:repeating-linear-gradient(90deg,rgba(255,255,255,.05) 0 1px,transparent 1px 3px),linear-gradient(100deg,#9c9a95,#e4e2dd 30%,#b9b7b1 55%,#eceae5 78%,#a3a19b);
   box-shadow:inset 0 1px 0 rgba(255,255,255,.7),inset 0 -1px 0 rgba(0,0,0,.25),0 5px 0 #111,2px 11px 14px rgba(0,0,0,.6)}
@@ -604,13 +605,15 @@ button.sync{font:inherit;border:0;cursor:pointer}
     </section>
 
     <section class="plate fuelp" aria-label="剩餘預算">
-      <div class="dashg" id="gFuel" role="img" aria-label="剩餘預算油箱表"></div>
-      <div class="fstack">
-        <div><div class="label">這週還能花</div><div class="fodo" id="left" role="img" aria-label="這週還能花"><small>NT$</small><span class="digits" id="leftDigits"></span></div></div>
+      <div class="fleft">
+        <div class="dashg" id="gFuel" role="img" aria-label="剩餘預算油箱表"></div>
         <div class="perday">平均每天<b id="perDay">NT$0</b></div>
-        <button class="pedal" id="openSpend" aria-label="踩油門，記一筆花費"><span class="pad"><i class="scr a"></i><i class="scr b"></i><i class="scr c"></i><i class="scr d"></i><i class="ov"></i><i class="ov"></i><i class="ov"></i><i class="ov"></i><i class="ov"></i><i class="ov"></i><b class="logo">grow</b><i class="ov"></i><i class="ov"></i><i class="ov"></i><i class="ov"></i><i class="ov"></i><i class="ov"></i></span><span class="cap">踩油門 · 記一筆</span></button>
       </div>
-      <div class="flog" id="fLog" aria-label="最近兩筆花費"></div>
+      <div class="fstack">
+        <div class="flog" id="fLog" aria-label="最近兩筆花費"></div>
+        <button class="pedal" id="openSpend" aria-label="踩油門，記一筆花費"><span class="pad"><i class="scr a"></i><i class="scr b"></i><i class="scr c"></i><i class="scr d"></i><i class="ov"></i><i class="ov"></i><i class="ov"></i><i class="ov"></i><i class="ov"></i><i class="ov"></i><b class="logo">grow</b><i class="ov"></i><i class="ov"></i><i class="ov"></i><i class="ov"></i><i class="ov"></i><i class="ov"></i></span><span class="cap">踩油門 · 記一筆</span></button>
+        <div><div class="label">這週還能花</div><div class="fodo" id="left" role="img" aria-label="這週還能花"><small>NT$</small><span class="digits" id="leftDigits"></span></div></div>
+      </div>
     </section>
 
     <section class="plate" aria-label="每週目標">
@@ -1478,16 +1481,7 @@ button.sync{font:inherit;border:0;cursor:pointer}
 
   function placeNeedle(){ const on=document.querySelector('nav button.on'), nd=document.querySelector('nav .needle'); if(on&&nd) nd.style.left=(on.offsetLeft+on.offsetWidth/2)+'px'; }
   placeNeedle(); addEventListener('resize', placeNeedle);
-  /* size the gas pedal so its caption's bottom lines up with the bottom of the fuel dial */
-  function fitPedal(){
-    const ped=$('openSpend'), pad=ped && ped.querySelector('.pad'), dial=$('gFuel').querySelector('svg'); if(!pad||!dial||!ped.offsetParent) return;
-    ped.style.marginTop='0px'; const col=ped.parentElement.clientWidth;
-    let w=Math.min(col*.78, 150); pad.style.width=w+'px';
-    let room = dial.getBoundingClientRect().bottom - ped.getBoundingClientRect().bottom;
-    if(room < 0) for(let k=0;k<4;k++){ const r = dial.getBoundingClientRect().bottom - ped.getBoundingClientRect().bottom; if(r>=-0.5) break; w=Math.max(70, w + r*1.6); pad.style.width=w+'px'; }
-    ped.style.marginTop = Math.max(0, dial.getBoundingClientRect().bottom - ped.getBoundingClientRect().bottom)+'px';
-  }
-  addEventListener('resize', fitPedal); document.fonts && document.fonts.ready.then(fitPedal);
+  const fitPedal = () => {};
 
   /* ---------- spend ---------- */
   $('openSpend').onclick=()=>{
