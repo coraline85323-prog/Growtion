@@ -118,11 +118,12 @@ function finish(lo){
 
 /* draw the flower on a 160px canvas and return it (cached per recipe) */
 const cache = new Map();
-function low(r){
-  const key = PARTS.map(p=>r[p.key]).join('.');
+function low(r, bare){
+  const key = PARTS.map(p=>r[p.key]).join('.')+(bare?'b':'');
   if(cache.has(key)) return cache.get(key);
   const lo = document.createElement('canvas'); lo.width = lo.height = LO; const c = lo.getContext('2d');
-  DRAW.bg[r.bg](c, r); DRAW.leaf[r.leaf](c, r);
+  if(!bare) DRAW.bg[r.bg](c, r);
+  DRAW.leaf[r.leaf](c, r);
   const [jx,jy] = joint(r.leaf); c.save(); c.translate(jx-80, jy-66); DRAW.cal[r.cal](c); c.restore();
   DRAW.pet[r.pet](c, r);
   finish(lo); cache.set(key, lo); return lo;
@@ -138,6 +139,9 @@ function paint(target, r, px){
   }
   t.imageSmoothingEnabled = true; t.imageSmoothingQuality = 'low'; t.drawImage(src, 0, 0, target.width, target.height);
 }
+
+/* the flower alone, no background, as a 160px canvas (for the news-TV scenes) */
+const bare = r => low(r, true);
 
 const TOTAL = PARTS.reduce((n,p)=>n*p.opts.length,1);
 const number = r => PARTS.reduce((n,p)=>n*p.opts.length+r[p.key],0)+1;
@@ -160,5 +164,5 @@ const ready = Promise.all([...SKETCH.leaf.map(loadImg), ...SKETCH.pet.map(loadIm
   PET = ims.slice(10).map((im,i)=>recolor(im, PCOL[i]));
   DEF.leaf = LEAF.map(topPoint); DEF.pet = PET.map(()=>[.5,.85]);
 });
-window.Flower = {ready, paint, recipe, name, number, TOTAL, PARTS};
+window.Flower = {ready, paint, bare, recipe, name, number, TOTAL, PARTS};
 })();

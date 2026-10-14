@@ -15,6 +15,7 @@
 <script>if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');</script>
 <script src="config.js"></script>
 <script src="flowers.js"></script>
+<script src="scenes.js"></script>
 <script>if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600&family=Noto+Sans+TC:wght@400;500;700&family=Share+Tech+Mono&display=swap">
@@ -496,6 +497,10 @@ nav .needle{position:absolute;z-index:2;top:2px;height:20px;width:2px;margin-lef
 .tv .ticker .run{white-space:nowrap;font:12px var(--f-px);color:var(--ink);padding-left:10px;animation:tickrun 24s linear infinite;will-change:transform}
 .tv .ticker .run em{font-style:normal;color:var(--orange-hot);margin:0 14px}
 @keyframes tickrun{to{transform:translateX(-100%)}}
+.tv .scn,.tv .noise{position:absolute;inset:0;width:100%;height:100%!important;aspect-ratio:auto!important}
+.tv .scn{z-index:1}
+.tv canvas[hidden]{display:none}
+.tv .noise{z-index:3;image-rendering:pixelated}
 .tv .empty{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:radial-gradient(ellipse at center,#0e2412,var(--crt) 80%);color:var(--phosphor);text-shadow:0 0 6px rgba(142,245,154,.5);font-family:var(--f-mono);text-align:center;padding:20px}
 .tv .empty b{font:400 22px var(--f-px);letter-spacing:.12em}
 .tv .empty span{font-size:12px;letter-spacing:.2em;opacity:.7}
@@ -971,9 +976,55 @@ button.sync{font:inherit;border:0;cursor:pointer}
   function newsTV(f, total){
     return `<div class="tv"><div class="bug"><span class="live"><i></i>LIVE</span><span class="ch">CH.03 花圃台</span></div>
       <canvas width="480" height="480" data-n="${f.n}"></canvas>
+      ${total!=null?'<canvas class="scn" width="480" height="480" hidden></canvas><canvas class="noise" width="96" height="96" hidden></canvas>':''}
       <div class="lower"><span class="kick">最新培育種</span><div class="main"><b>No.${String(Flower.number(f.r)).padStart(5,'0')} ${esc(Flower.name(f.r))}</b><small>於 ${ymd(f.ts)} 培育成功</small></div></div>
       ${total!=null?`<div class="ticker"><span class="tag">快訊</span><div class="run">${total}</div></div>`:''}</div>`;
   }
+  /* the news TV flips channels: the flower report plus six side scenes (scenes.js), a random one every 4s,
+     with static between them; each scene swaps between its two drawings to look alive */
+  const TV = {n:0, f:null, imgs:null, cur:-1, fr:0, swap:0};
+  function tvScenes(f){
+    if(TV.n === f.n) return;
+    TV.n = f.n; TV.f = f; TV.imgs = null; TV.cur = -1;
+    const big = src => { const c = document.createElement('canvas'); c.width = c.height = 320; const x = c.getContext('2d'); x.imageSmoothingEnabled = false; x.drawImage(src, 0, 0, 320, 320); return c.toDataURL(); };
+    const full = document.createElement('canvas'); full.width = full.height = 160; Flower.paint(full, f.r);
+    const n = f.n, list = Scenes.build({full: big(full), bare: big(Flower.bare(f.r))});
+    Promise.all(list.map(s => Promise.all(s.frames.map(svg => { const im = new Image(); im.src = URL.createObjectURL(new Blob([svg], {type:'image/svg+xml'})); return im.decode().then(() => im); }))
+      .then(ims => ({...s, ims}))))
+      .then(r => { if(TV.n === n) TV.imgs = r; }).catch(() => {});
+  }
+  function tvShow(){
+    const tv = $('wNews').querySelector('.tv'); if(!tv || !TV.f) return;
+    const scn = tv.querySelector('.scn'); if(!scn) return;
+    const s = TV.cur >= 0 && TV.imgs && TV.imgs[TV.cur], f = TV.f, no = `No.${String(Flower.number(f.r)).padStart(5,'0')}`;
+    scn.hidden = !s;
+    if(s) scn.getContext('2d').drawImage(s.ims[TV.fr], 0, 0, 480, 480);
+    tv.querySelector('.ch').textContent = s ? s.ch : 'CH.03 花圃台';
+    tv.querySelector('.kick').textContent = s ? s.kick : '最新培育種';
+    tv.querySelector('.main b').textContent = s ? s.head : `${no} ${Flower.name(f.r)}`;
+    tv.querySelector('.main small').textContent = s ? `${no} ${Flower.name(f.r)}` : `於 ${ymd(f.ts)} 培育成功`;
+  }
+  function tvStatic(done){
+    const nz = $('wNews').querySelector('.noise'); if(!nz){ done(); return; }
+    const x = nz.getContext('2d'), d = x.createImageData(96, 96), t0 = performance.now();
+    nz.hidden = false;
+    (function step(t){
+      const roll = ((t - t0) / 4) % 96;
+      for(let i = 0; i < d.data.length; i += 4){ const y = (i/4/96)|0, v = Math.random()*255*(Math.abs(y-roll) < 6 ? .5 : 1);
+        d.data[i] = d.data[i+1] = d.data[i+2] = v; d.data[i+3] = 255; }
+      x.putImageData(d, 0, 0);
+      if(t - t0 < 180) requestAnimationFrame(step); else { nz.hidden = true; done(); }
+    })(t0);
+  }
+  setInterval(() => {   // swap the two drawings of the current scene
+    if(TV.cur < 0 || document.hidden || $('vWorld').hidden) return;
+    TV.fr ^= 1; tvShow();
+  }, 450);
+  setInterval(() => {   // change channel every 4s
+    if(!TV.imgs || document.hidden || $('vWorld').hidden) return;
+    let next; do next = Math.floor(Math.random() * (TV.imgs.length + 1)) - 1; while(next === TV.cur);
+    tvStatic(() => { TV.cur = next; TV.fr = 0; tvShow(); });
+  }, 4000);
   function paintIn(root){ root.querySelectorAll('canvas[data-n]').forEach(c=>Flower.paint(c, Flower.recipe(+c.dataset.n))); }
   let worldList = [];
   function renderWorld(D){
@@ -994,6 +1045,7 @@ button.sync{font:inherit;border:0;cursor:pointer}
       slots.push(`<div class="fslot lock"><div class="q">?</div><p>培育中<small>還差 ${need} 顆</small></p></div>`);
       $('wDex').innerHTML = slots.join('');
       paintIn($('vWorld'));
+      if(last && window.Scenes){ tvScenes(last); tvShow(); }
       checkNewFlower(L);
     });
   }
