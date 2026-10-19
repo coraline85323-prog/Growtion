@@ -908,7 +908,7 @@ button.sync{font:inherit;border:0;cursor:pointer}
     meterDigits($('leftDigits'), amt.padStart(Math.max(4, amt.length), '0'), amt.length);
     $('perDay').textContent = over ? '下週重來' : 'NT$'+fmt(Math.floor(D.left/D.daysLeft));
     const last2 = events.filter(e=>e.kind==='spend').sort((a,b)=>(b.ts||0)-(a.ts||0)).slice(0,2);
-    const when = t => { const d=new Date(t), k=dayKey(d); return k===D.today ? '今天' : `${d.getMonth()+1}/${d.getDate()}`; };
+    const when = t => { const d=new Date(t), k=dayKey(d); return k===D.today ? `${pad(d.getHours())}:${pad(d.getMinutes())}` : `${d.getMonth()+1}/${d.getDate()}`; };
     $('fLog').innerHTML = `<div class="fh"><span>耗油紀錄</span><span>LAST 2</span></div>` + (last2.length
       ? last2.map(e=>`<div class="fr"><span class="d">${when(e.ts)}</span><span class="c">${esc(e.cat||'花費')}</span><i></i><span>−NT$${fmt(+e.amt||0)}</span></div>`).join('')
       : '<div class="none">這週還沒有耗油。</div>');
