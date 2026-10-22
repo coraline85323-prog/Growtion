@@ -102,9 +102,19 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
 .fscr .r{display:grid;grid-template-columns:auto auto minmax(8px,1fr) auto;gap:8px;align-items:baseline;white-space:nowrap;padding:4px 0;font:15px/1.1 var(--f-px)}
 .fscr .r .t{opacity:.6}.fscr .r .c{font-family:var(--f-tc);font-size:14px}
 .fscr .r i{align-self:center;border-bottom:2px dotted rgba(142,245,154,.3)}
-.fscr .r:first-of-type{color:#d8ffd8;text-shadow:0 0 8px rgba(142,245,154,.9)}
+.fscr .hd + .r{color:#d8ffd8;text-shadow:0 0 8px rgba(142,245,154,.9)}
 .fscr .none{padding:6px 0 2px;font:14px var(--f-tc);opacity:.6}
 .fscr .ft{font:12px var(--f-ui);letter-spacing:.08em;opacity:.65;margin-top:8px;display:flex;justify-content:space-between}
+.flogbtn{cursor:pointer}
+.flogbtn:active{transform:translateY(1px)}
+.wk-note{margin:2px 2px 6px;font-size:14px;color:var(--phosphor)}
+.wk-cats{display:grid;gap:6px;margin-bottom:6px}
+.wk-cats div{display:grid;grid-template-columns:4.5em minmax(0,1fr) 3.6em;gap:8px;align-items:center;font-size:14px}
+.wk-cats i{height:8px;border-radius:2px;background:rgba(255,255,255,.06)}
+.wk-cats i b{display:block;height:100%;border-radius:2px;background:var(--orange);box-shadow:0 0 6px rgba(255,122,26,.5)}
+.wk-cats em{font:14px var(--f-mono);font-style:normal;text-align:right;color:var(--orange-hot)}
+.wk-log .wk-dh{display:flex;justify-content:space-between;font:12px var(--f-ui);letter-spacing:.12em;opacity:.7;margin:10px 0 2px;padding-bottom:3px;border-bottom:1px dashed rgba(142,245,154,.3)}
+.wk-log .wk-dh:first-child{margin-top:0}
 .fgo{padding:12px 8px 14px}.fgo i::before{width:30%}
 .obtn.fgo i::after{content:"記一筆";font-size:20px}
 /* wallet: what's left this week, as NT bills and coins */
@@ -665,7 +675,7 @@ button.sync{font:inherit;border:0;cursor:pointer}
       <div class="fhead"><span class="label">這週每天的耗油</span><span class="fl" id="fLeft"></span></div>
       <div class="days" id="fDays"></div>
       <div class="wallet" id="fWallet" role="img"></div>
-      <div class="crt"><div class="screen fscr" id="fLog" aria-label="今天的耗油"></div></div>
+      <div class="crt flogbtn" id="fLogBtn" role="button" tabindex="0" aria-label="今天的耗油，點開看整週紀錄"><div class="screen fscr" id="fLog"></div></div>
       <button class="obtn fgo" id="openSpend" aria-label="記一筆花費"><i></i></button>
     </section>
 
@@ -969,18 +979,37 @@ button.sync{font:inherit;border:0;cursor:pointer}
     }).join('');
     const w = $('fWallet'); w.innerHTML = walletHTML(D.left, w.clientWidth - 28);
     w.setAttribute('aria-label', over ? `錢包空了，超過 ${fmt(-D.left)} 元` : `錢包裡還有 ${fmt(D.left)} 元`);
-    // days in a row with at least one entry, counting back from today (or yesterday if today has none yet)
-    let streak = 0; const c = new Date(D.now); c.setHours(12,0,0,0);
-    if(byDay[dayKey(c)] == null) c.setDate(c.getDate()-1);
-    while(byDay[dayKey(c)] != null){ streak++; c.setDate(c.getDate()-1); }
     const todays = spends.filter(e=>spendDay(e)===D.today).sort((a,b)=>(b.ts||0)-(a.ts||0));
-    const weekN = D.thisWeek.filter(e=>e.kind==='spend').length, MAXR = 5;
+    const MAXR = 5;
     const hm = t => { const d = new Date(t); return `${pad(d.getHours())}:${pad(d.getMinutes())}`; };
     $('fLog').innerHTML = `<div class="hd"><span>今天的耗油</span><b>NT$${fmt(byDay[D.today]||0)}</b></div>`
       + (todays.length ? todays.slice(0,MAXR).map(e=>`<div class="r"><span class="t">${hm(e.ts)}</span><span class="c">${esc(e.cat||'花費')}</span><i></i><span>−${fmt(+e.amt||0)}</span></div>`).join('')
           + (todays.length > MAXR ? `<div class="none">還有 ${todays.length-MAXR} 筆</div>` : '')
         : '<div class="none">今天還沒有耗油。</div>')
-      + `<div class="ft"><span>${streak ? `連續記帳 ${streak} 天` : '今天記一筆，開始連續記帳'}</span><span>本週 ${weekN} 筆</span></div>`;
+      + `<div class="ft"><span>平均每天 ${over ? '下週重來' : 'NT$'+fmt(Math.floor(D.left/D.daysLeft))}</span><span>看整週 ›</span></div>`;
+  }
+  const hhmm = t => { const d = new Date(t); return `${pad(d.getHours())}:${pad(d.getMinutes())}`; };
+  // the whole week's fuel log, with the details that don't fit on the panel
+  function openWeekLog(){
+    const D = derive(), spends = events.filter(e=>e.kind==='spend');
+    const week = D.thisWeek.filter(e=>e.kind==='spend').sort((a,b)=>(b.ts||0)-(a.ts||0));
+    const byDay = {}; spends.forEach(e=>{ const k = spendDay(e); byDay[k] = (byDay[k]||0) + (+e.amt||0); });
+    let streak = 0; const c = new Date(D.now); c.setHours(12,0,0,0);
+    if(byDay[dayKey(c)] == null) c.setDate(c.getDate()-1);
+    while(byDay[dayKey(c)] != null){ streak++; c.setDate(c.getDate()-1); }
+    const cats = {}; week.forEach(e=>{ const k = e.cat||'花費'; cats[k] = (cats[k]||0) + (+e.amt||0); });
+    const catRows = Object.entries(cats).sort((a,b)=>b[1]-a[1]);
+    const groups = []; week.forEach(e=>{ const k = spendDay(e); let g = groups[groups.length-1]; if(!g || g.k!==k) groups.push(g = {k, list:[]}); g.list.push(e); });
+    const dayName = k => { const d = new Date(k+'T12:00'); return k===D.today ? '今天' : `${d.getMonth()+1}/${d.getDate()} 週${DOW[d.getDay()]}`; };
+    sheet(`<h2>這週的耗油</h2>
+      <div class="daystats"><div><b>${fmt(D.spent)}</b><span>已花</span></div><div><b>${D.left<0?'−'+fmt(-D.left):fmt(D.left)}</b><span>還能花</span></div>
+        <div><b>${D.left<0?'—':fmt(Math.floor(D.left/D.daysLeft))}</b><span>平均每天</span></div><div><b>${week.length}</b><span>筆數</span></div></div>
+      <p class="wk-note">${streak ? `已經連續記帳 ${streak} 天` : '今天記一筆，就開始連續記帳'}</p>
+      ${catRows.length ? `<h3>花在哪裡</h3><div class="wk-cats">${catRows.map(([k,v])=>`<div><span>${esc(k)}</span><i><b style="width:${Math.round(v/catRows[0][1]*100)}%"></b></i><em>${fmt(v)}</em></div>`).join('')}</div>` : ''}
+      <h3>每一筆</h3>
+      <div class="crt"><div class="screen fscr wk-log">${groups.length ? groups.map(g=>`<div class="wk-dh"><span>${dayName(g.k)}</span><span>NT$${fmt(byDay[g.k]||0)}</span></div>`
+        + g.list.map(e=>`<div class="r"><span class="t">${hhmm(e.ts)}</span><span class="c">${esc(e.cat||'花費')}</span><i></i><span>−${fmt(+e.amt||0)}</span></div>`).join('')).join('')
+        : '<div class="none">這週還沒有耗油。</div>'}</div></div>`);
   }
 
   /* ---------- render ---------- */
@@ -1630,6 +1659,8 @@ button.sync{font:inherit;border:0;cursor:pointer}
   placeNeedle(); addEventListener('resize', placeNeedle);
 
   /* ---------- spend ---------- */
+  $('fLogBtn').onclick = openWeekLog;
+  $('fLogBtn').onkeydown = e => { if(e.key==='Enter'||e.key===' '){ e.preventDefault(); openWeekLog(); } };
   $('openSpend').onclick=()=>{
     let amt='', cat='';
     const s = sheet(`<h2>記一筆花費</h2><div class="amount" id="amt">NT$0</div>
