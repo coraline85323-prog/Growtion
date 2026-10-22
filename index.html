@@ -114,12 +114,12 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
 .wallet::before{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(0,0,0,.22) 0 1px,transparent 1px 3px)}
 .wallet .wl{position:relative;display:flex;justify-content:space-between;align-items:baseline;font:12px var(--f-ui);letter-spacing:.16em;color:#839958;margin-bottom:10px}
 .wallet .wl b{font:400 16px var(--f-px);letter-spacing:.04em;color:#F7F4D5}
-.wallet .wrow{position:relative;display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px 11px}
+.wallet .wrow{position:relative;display:flex;align-items:flex-end;justify-content:space-between;gap:10px}
 .wallet .stk{position:relative;display:flex;flex-direction:column;align-items:center;gap:5px}
-.wallet .stk em{font:12px/1 var(--f-px);font-style:normal;color:#D3968C}
+.wallet .stk em{font:14px/1 var(--f-px);font-style:normal;color:#D3968C}
 .wallet .pile{position:relative}
 .wallet .px{position:absolute;left:0;display:block;image-rendering:pixelated;shape-rendering:crispEdges}
-.wallet .px + b{position:absolute;left:0;right:0;text-align:center;font:10px/1 var(--f-px);pointer-events:none}
+.wallet .px + b{position:absolute;left:0;right:0;top:0;text-align:center;font-family:var(--f-px);font-weight:400;pointer-events:none;-webkit-text-stroke:.6px currentColor;text-shadow:.6px 0 0 currentColor}
 .wallet .empty{position:relative;font:14px var(--f-tc);color:#F7F4D5;opacity:.75;padding:6px 0}
 .fstack{display:flex;flex-direction:column;justify-content:space-between;gap:12px;padding-block:6px;min-width:0}
 .fstack .label{margin-bottom:6px}
@@ -928,27 +928,30 @@ button.sync{font:inherit;border:0;cursor:pointer}
   /* wallet: what's left this week as flat pixel notes and coins (palette: #0A3323 #839958 #F7F4D5 #D3968C #105666) */
   const NOTE = ['OOOOOOOOOOOOOOOO','OFFFFFFFFFFFFFFO','OFLLLLLLLLLLLLFO','OFLFFFFFFFFFFLFO','OFLFFFFFFFFFFLFO','OFLFFFFFFFFFFLFO','OFLLLLLLLLLLLLFO','OFFFFFFFFFFFFFFO','OOOOOOOOOOOOOOOO'];
   const COIN = ['..OOOOO..','.OFFFFFO.','OFHHFFFSO','OFHFFFFSO','OFFFFFFSO','OFFFFFFSO','OFFFFFSSO','.OSSSSSO.','..OOOOO..'];
+  // k: size relative to a note pixel; coins of the same colour differ by size
   const DENOMS = [
-    {v:1000, map:NOTE, s:3, c:{O:'#061a12', F:'#F7F4D5', L:'#105666', S:'#D3968C'}, t:'#105666'},
-    {v:500,  map:NOTE, s:3, c:{O:'#061a12', F:'#839958', L:'#F7F4D5', S:'#0A3323'}, t:'#0A3323'},
-    {v:100,  map:NOTE, s:3, c:{O:'#061a12', F:'#D3968C', L:'#F7F4D5', S:'#105666'}, t:'#3b1d19'},
-    {v:50,   map:COIN, s:4, c:{O:'#061a12', F:'#F7F4D5', H:'#ffffff', S:'#839958'}, t:'#0A3323'},
-    {v:10,   map:COIN, s:3, c:{O:'#061a12', F:'#839958', H:'#c9d6a2', S:'#4f6232'}, t:'#0A3323'},
-    {v:5,    map:COIN, s:3, c:{O:'#061a12', F:'#4f97a3', H:'#a9d3d8', S:'#105666'}, t:'#F7F4D5'},
-    {v:1,    map:COIN, s:3, c:{O:'#061a12', F:'#D3968C', H:'#f3cdc6', S:'#9a5d54'}, t:'#3b1d19'},
+    {v:1000, map:NOTE, k:1,   c:{O:'#061a12', F:'#F7F4D5', L:'#105666'}, t:'#105666'},
+    {v:500,  map:NOTE, k:1,   c:{O:'#061a12', F:'#839958', L:'#F7F4D5'}, t:'#0A3323'},
+    {v:100,  map:NOTE, k:1,   c:{O:'#061a12', F:'#D3968C', L:'#F7F4D5'}, t:'#3b1d19'},
+    {v:50,   map:COIN, k:1.2, c:{O:'#061a12', F:'#839958', H:'#c9d6a2', S:'#4f6232'}, t:'#0A3323'},
+    {v:10,   map:COIN, k:1.05,c:{O:'#061a12', F:'#F7F4D5', H:'#ffffff', S:'#b9b48f'}, t:'#105666'},
+    {v:5,    map:COIN, k:.9,  c:{O:'#061a12', F:'#F7F4D5', H:'#ffffff', S:'#b9b48f'}, t:'#105666'},
+    {v:1,    map:COIN, k:.85, c:{O:'#061a12', F:'#839958', H:'#c9d6a2', S:'#4f6232'}, t:'#0A3323'},
   ];
-  const pxSprite = (map, c, s) => { const w = map[0].length, h = map.length; let r = '';
-    map.forEach((row,y)=>[...row].forEach((k,x)=>{ if(c[k]) r += `<rect x="${x}" y="${y}" width="1" height="1" fill="${c[k]}"/>`; }));
-    return `<svg class="px" viewBox="0 0 ${w} ${h}" width="${w*s}" height="${h*s}" aria-hidden="true">${r}</svg>`; };
-  const SPRITES = {}; DENOMS.forEach(d=>SPRITES[d.v] = pxSprite(d.map, d.c, d.s));
-  function walletHTML(left){
+  const pxSprite = (map, c, w, h) => { let r = '';
+    map.forEach((row,y)=>[...row].forEach((k,x)=>{ if(c[k]) r += `<rect x="${x}" y="${y}" width="1.02" height="1.02" fill="${c[k]}"/>`; }));
+    return `<svg class="px" viewBox="0 0 ${map[0].length} ${map.length}" width="${w}" height="${h}" aria-hidden="true">${r}</svg>`; };
+  function walletHTML(left, W){
     if(left <= 0) return `<div class="wl"><span>錢包</span><b>${left<0?'超過 NT$'+fmt(-left):'NT$0'}</b></div><div class="empty">錢包空了，下週一會再補滿。</div>`;
     let r = Math.floor(left);
     const stacks = DENOMS.map(d=>{ const n = Math.floor(r/d.v); r -= n*d.v; return {...d, n}; }).filter(x=>x.n);
+    // size the pixels so the row fills the screen's width (capped so one lonely note doesn't get huge)
+    const GAP = 10, units = stacks.reduce((u,d)=>u + d.map[0].length*d.k, 0);
+    const s = Math.max(2.5, Math.min(7, ((W > 100 ? W : 330) - GAP*(stacks.length-1)) / units));
     return `<div class="wl"><span>錢包裡還有</span><b>NT$${fmt(Math.floor(left))}</b></div><div class="wrow">${stacks.map(d=>{
-      const shown = Math.min(d.n, 5), w = d.map[0].length*d.s, h1 = d.map.length*d.s, step = d.s;
-      const items = Array.from({length:shown},(_,i)=>{ const top = (shown-1-i)*step;
-        return `<span style="position:absolute;left:0;top:${top}px;width:${w}px;height:${h1}px">${SPRITES[d.v]}<b style="top:${Math.round(h1/2-5)}px;color:${d.t}">${d.v}</b></span>`; }).join('');
+      const p = s*d.k, w = Math.floor(d.map[0].length*p), h1 = Math.floor(d.map.length*p), step = Math.max(2, Math.round(p*.8)), shown = Math.min(d.n, 5);
+      const fs = Math.round(Math.min(h1*.42, w/(String(d.v).length*.62+.6)));
+      const items = Array.from({length:shown},(_,i)=>`<span style="position:absolute;left:0;top:${(shown-1-i)*step}px;width:${w}px;height:${h1}px">${pxSprite(d.map, d.c, w, h1)}<b style="line-height:${h1}px;font-size:${fs}px;color:${d.t}">${d.v}</b></span>`).join('');
       return `<div class="stk"><div class="pile" style="width:${w}px;height:${h1+(shown-1)*step}px">${items}</div><em>×${d.n}</em></div>`;
     }).join('')}</div>`;
   }
@@ -964,7 +967,7 @@ button.sync{font:inherit;border:0;cursor:pointer}
       const cls = k===D.today ? 'today' : k > D.today ? 'off' : (amt==null ? 'off' : '');
       return `<div class="mono ${cls}"><div class="mn dw">${n}</div><div class="am">${amt!=null ? fmt(amt) : k > D.today ? '' : '—'}</div><div class="ck">${amt!=null ? '✓' : ''}</div></div>`;
     }).join('');
-    const w = $('fWallet'); w.innerHTML = walletHTML(D.left);
+    const w = $('fWallet'); w.innerHTML = walletHTML(D.left, w.clientWidth - 28);
     w.setAttribute('aria-label', over ? `錢包空了，超過 ${fmt(-D.left)} 元` : `錢包裡還有 ${fmt(D.left)} 元`);
     // days in a row with at least one entry, counting back from today (or yesterday if today has none yet)
     let streak = 0; const c = new Date(D.now); c.setHours(12,0,0,0);
