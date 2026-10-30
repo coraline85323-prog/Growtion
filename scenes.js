@@ -86,13 +86,22 @@ function trim(src){
   c.getContext('2d').drawImage(src, -x0, -y0); return c;
 }
 function pixFrames(s, bare){
-  const fl = trim(bare);
+  const fl = trim(bare), ar = fl.width / fl.height;
   return Promise.all(s.pix.map((src, j) => loadImg(src).then(im => {
     const c = document.createElement('canvas'); c.width = c.height = 480; const x = c.getContext('2d');
-    x.drawImage(im, 0, 0, 480, 480);
-    const h = s.fl.h, w = h * fl.width / fl.height;
-    x.imageSmoothingEnabled = false; x.save(); x.translate(s.fl.x, s.fl.base); x.rotate(j ? .035 : -.025);
-    x.drawImage(fl, -w/2, -h, w, h); x.restore();
+    x.imageSmoothingEnabled = false;
+    if(s.print){
+      // the dress is left see-through in the frame: lay cloth and a staggered flower print under it
+      const [x0, y0, x1, y1] = s.print[j], h = 30, w = h * ar;
+      x.fillStyle = '#f8eed6'; x.fillRect(0, 0, 480, 480);
+      for(let r = 0, y = y0 - 10; y < y1 + h; r++, y += 34)
+        for(let px = x0 - 10 + (r % 2) * 19; px < x1 + 10; px += 38) x.drawImage(fl, px - w/2, y - h/2, w, h);
+      x.drawImage(im, 0, 0, 480, 480);
+    } else {
+      x.drawImage(im, 0, 0, 480, 480);
+      const h = s.fl.h, w = h * ar;
+      x.drawImage(fl, s.fl.x - w/2, s.fl.base - h, w, h);
+    }
     return c;
   })));
 }
@@ -234,10 +243,14 @@ const SCENES = [
     pix:['scenes/choir-a.webp','scenes/choir-b.webp'], fl:{x:237, base:226, h:176}},
   {key:'kids',  ch:'CH.12 教育台', kick:'校園報導', head:'全校小朋友寫生', draw:kids,
     pix:['scenes/kids-a.webp','scenes/kids-b.webp'], fl:{x:224, base:427, h:132}},
-  {key:'lab',   ch:'CH.21 科學台', kick:'科學新知', head:'研究室全力分析中', draw:lab},
-  {key:'farm',  ch:'CH.05 農業台', kick:'農業報導', head:'農友試種成功', draw:farm},
-  {key:'home',  ch:'CH.33 生活台', kick:'居家生活', head:'客廳掛畫新寵兒', draw:home},
-  {key:'model', ch:'CH.18 時尚台', kick:'時尚快訊', head:'印花登上伸展台', draw:model},
+  {key:'lab',   ch:'CH.21 科學台', kick:'科學新知', head:'研究室全力分析中', draw:lab,
+    pix:['scenes/lab-a.webp','scenes/lab-b.webp'], fl:{x:269, base:386, h:158}},
+  {key:'farm',  ch:'CH.05 農業台', kick:'農業報導', head:'農友試種成功', draw:farm,
+    pix:['scenes/farm-a.webp','scenes/farm-b.webp'], fl:{x:338, base:432, h:190}},
+  {key:'home',  ch:'CH.33 生活台', kick:'居家生活', head:'客廳掛畫新寵兒', draw:home,
+    pix:['scenes/home-a.webp','scenes/home-b.webp'], fl:{x:252, base:208, h:122}},
+  {key:'model', ch:'CH.18 時尚台', kick:'時尚快訊', head:'印花登上伸展台', draw:model,
+    pix:['scenes/model-a.webp','scenes/model-b.webp'], print:[[116,139,342,473],[34,139,425,445]]},
 ];
 window.Scenes = {
   list: SCENES,
