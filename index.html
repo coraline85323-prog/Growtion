@@ -1077,7 +1077,7 @@ button.sync{font:inherit;border:0;cursor:pointer}
       for(let i = 0; i < d.data.length; i += 4){ const y = (i/4/96)|0, v = Math.random()*255*(Math.abs(y-roll) < 6 ? .5 : 1);
         d.data[i] = d.data[i+1] = d.data[i+2] = v; d.data[i+3] = 255; }
       x.putImageData(d, 0, 0);
-      if(t - t0 < 180) requestAnimationFrame(step); else { nz.hidden = true; done(); }
+      if(t - t0 < 80) requestAnimationFrame(step); else { nz.hidden = true; done(); }
     })(t0);
   }
   setInterval(() => {   // swap the two drawings of the current scene

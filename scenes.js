@@ -231,9 +231,9 @@ function model(F, f){
 
 const SCENES = [
   {key:'choir', ch:'CH.07 音樂台', kick:'藝文現場', head:'市民合唱團獻唱', draw:choir,
-    pix:['scenes/choir-a.webp','scenes/choir-b.webp'], fl:{x:237, base:228, h:172}},
+    pix:['scenes/choir-a.webp','scenes/choir-b.webp'], fl:{x:237, base:226, h:176}},
   {key:'kids',  ch:'CH.12 教育台', kick:'校園報導', head:'全校小朋友寫生', draw:kids,
-    pix:['scenes/kids-a.webp','scenes/kids-b.webp'], fl:{x:225, base:424, h:128}},
+    pix:['scenes/kids-a.webp','scenes/kids-b.webp'], fl:{x:224, base:427, h:132}},
   {key:'lab',   ch:'CH.21 科學台', kick:'科學新知', head:'研究室全力分析中', draw:lab},
   {key:'farm',  ch:'CH.05 農業台', kick:'農業報導', head:'農友試種成功', draw:farm},
   {key:'home',  ch:'CH.33 生活台', kick:'居家生活', head:'客廳掛畫新寵兒', draw:home},
