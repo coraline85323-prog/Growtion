@@ -1053,7 +1053,7 @@ button.sync{font:inherit;border:0;cursor:pointer}
     const big = src => { const c = document.createElement('canvas'); c.width = c.height = 320; const x = c.getContext('2d'); x.imageSmoothingEnabled = false; x.drawImage(src, 0, 0, 320, 320); return c.toDataURL(); };
     const full = document.createElement('canvas'); full.width = full.height = 160; Flower.paint(full, f.r);
     const n = f.n, list = Scenes.build({full: big(full), bare: big(Flower.bare(f.r))});
-    Promise.all(list.map(s => Promise.all(s.frames.map(svg => { const im = new Image(); im.src = URL.createObjectURL(new Blob([svg], {type:'image/svg+xml'})); return im.decode().then(() => im); }))
+    Promise.all(list.map(s => s.pix ? Scenes.pixFrames(s, Flower.bare(f.r)).then(ims => ({...s, ims})) : Promise.all(s.frames.map(svg => { const im = new Image(); im.src = URL.createObjectURL(new Blob([svg], {type:'image/svg+xml'})); return im.decode().then(() => im); }))
       .then(ims => ({...s, ims}))))
       .then(r => { if(TV.n === n) TV.imgs = r; }).catch(() => {});
   }

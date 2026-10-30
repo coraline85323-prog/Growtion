@@ -74,6 +74,28 @@ ${body}
 </svg>`;
 }
 const W = s => `<g filter="url(#w)">${s}</g>`;
+// pixel scenes (pix): two painted frames from scenes/, with the newest flower standing where the
+// painting left a blank; fl = flower centre x, base y and height in the 480px frame
+const loadImg = src => new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = no; i.src = src; });
+function trim(src){
+  const w = src.width, h = src.height, d = src.getContext('2d').getImageData(0, 0, w, h).data;
+  let x0 = w, y0 = h, x1 = -1, y1 = -1;
+  for(let y = 0; y < h; y++) for(let x = 0; x < w; x++) if(d[(y*w + x)*4 + 3] > 20){ if(x < x0) x0 = x; if(x > x1) x1 = x; if(y < y0) y0 = y; if(y > y1) y1 = y; }
+  if(x1 < 0) return src;
+  const c = document.createElement('canvas'); c.width = x1 - x0 + 1; c.height = y1 - y0 + 1;
+  c.getContext('2d').drawImage(src, -x0, -y0); return c;
+}
+function pixFrames(s, bare){
+  const fl = trim(bare);
+  return Promise.all(s.pix.map((src, j) => loadImg(src).then(im => {
+    const c = document.createElement('canvas'); c.width = c.height = 480; const x = c.getContext('2d');
+    x.drawImage(im, 0, 0, 480, 480);
+    const h = s.fl.h, w = h * fl.width / fl.height;
+    x.imageSmoothingEnabled = false; x.save(); x.translate(s.fl.x, s.fl.base); x.rotate(j ? .035 : -.025);
+    x.drawImage(fl, -w/2, -h, w, h); x.restore();
+    return c;
+  })));
+}
 // tags here stack a shared style then override bits of it (stroke-width, stroke); XML allows each attribute once, so keep the last one
 const tidy = svg => svg.replace(/<[a-zA-Z][^<>]*>/g, tag => {
   const seen = new Map(), head = tag.match(/^<[a-zA-Z]+/)[0], close = /\/>$/.test(tag) ? '/>' : '>';
@@ -208,8 +230,10 @@ function model(F, f){
 }
 
 const SCENES = [
-  {key:'choir', ch:'CH.07 音樂台', kick:'藝文現場', head:'市民合唱團獻唱', draw:choir},
-  {key:'kids',  ch:'CH.12 教育台', kick:'校園報導', head:'全校小朋友寫生', draw:kids},
+  {key:'choir', ch:'CH.07 音樂台', kick:'藝文現場', head:'市民合唱團獻唱', draw:choir,
+    pix:['scenes/choir-a.webp','scenes/choir-b.webp'], fl:{x:237, base:228, h:172}},
+  {key:'kids',  ch:'CH.12 教育台', kick:'校園報導', head:'全校小朋友寫生', draw:kids,
+    pix:['scenes/kids-a.webp','scenes/kids-b.webp'], fl:{x:225, base:424, h:128}},
   {key:'lab',   ch:'CH.21 科學台', kick:'科學新知', head:'研究室全力分析中', draw:lab},
   {key:'farm',  ch:'CH.05 農業台', kick:'農業報導', head:'農友試種成功', draw:farm},
   {key:'home',  ch:'CH.33 生活台', kick:'居家生活', head:'客廳掛畫新寵兒', draw:home},
@@ -217,6 +241,7 @@ const SCENES = [
 ];
 window.Scenes = {
   list: SCENES,
-  build: F => SCENES.map(s => ({...s, frames:[tidy(s.draw(F, 0)), tidy(s.draw(F, 1))]})),
+  build: F => SCENES.map(s => s.pix ? {...s} : ({...s, frames:[tidy(s.draw(F, 0)), tidy(s.draw(F, 1))]})),
+  pixFrames,
 };
 })();
